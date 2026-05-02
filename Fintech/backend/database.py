@@ -17,6 +17,8 @@ class User(Base):
     name = Column(String)
     role = Column(String)  # "admin" or "user"
     company_id = Column(String, nullable=True)
+    approval_status = Column(String, default="approved")  # "approved" | "pending" | "rejected"
+    unlocked_features = Column(JSON, default=list)
 
 
 class Company(Base):

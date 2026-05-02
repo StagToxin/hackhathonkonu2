@@ -101,15 +101,21 @@ def login(payload: dict, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
 
     token = f"tok-{uuid.uuid4().hex}"
-    _sessions[token] = {"email": user.email, "name": user.name, "role": user.role, "companyId": user.company_id}
+    user_dict = {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "companyId": user.company_id,
+        "approvalStatus": user.approval_status or "approved",
+        "unlockedFeatures": user.unlocked_features or [],
+    }
+    _sessions[token] = user_dict
 
     add_log(db, "auth.login", user.email, {"role": user.role})
     logger.info(f"Login: {user.email}")
 
-    return {
-        "token": token,
-        "user": {"email": user.email, "name": user.name, "role": user.role, "companyId": user.company_id},
-    }
+    return {"token": token, "user": user_dict}
 
 
 @app.post("/api/auth/register")

@@ -41,7 +41,7 @@ Aşağıdaki başlıklar altında analiz yaz:
                 {"role": "user", "content": prompt}
             ]
         )
-        return response["message"]["content"]
+        return response.message.content
     except Exception as e:
         logger.error(f"Ollama hatası ({OLLAMA_MODEL}): {e}")
         return f"""## Güçlü Yönler
@@ -146,7 +146,7 @@ Belge içeriği:
             model=OLLAMA_MODEL,
             messages=[{"role": "user", "content": prompt}]
         )
-        content = response["message"]["content"].strip()
+        content = response.message.content.strip()
         # JSON bloğunu bul
         import json, re
         match = re.search(r'\{.*\}', content, re.DOTALL)

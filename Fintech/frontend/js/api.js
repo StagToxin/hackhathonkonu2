@@ -1,7 +1,7 @@
 (function () {
   const configuredApiBase = window.localStorage.getItem("apiBaseUrl");
   const API_BASE = configuredApiBase || "http://localhost:8001";
-  const USE_MOCK_API = !configuredApiBase;
+  const USE_MOCK_API = false; // Her zaman gerçek backend'i dene, hata olursa mock'a düş
   const DEBUG = false;
   function devLog(...args) {
     if (DEBUG) console.info(...args);
