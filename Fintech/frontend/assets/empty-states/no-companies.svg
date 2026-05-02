@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240" role="img" aria-label="Boş firma listesi">
+  <rect width="360" height="240" rx="18" fill="#F8FAFB"/>
+  <rect x="82" y="70" width="196" height="118" rx="14" fill="#FFFFFF" stroke="#D8E4E6"/>
+  <rect x="112" y="104" width="42" height="84" rx="6" fill="#2DBE8E" opacity=".18"/>
+  <rect x="160" y="88" width="88" height="100" rx="8" fill="#1E3A46" opacity=".14"/>
+  <circle cx="126" cy="118" r="5" fill="#2DBE8E"/><circle cx="142" cy="118" r="5" fill="#2DBE8E"/>
+  <circle cx="178" cy="108" r="5" fill="#1F8F6A"/><circle cx="198" cy="108" r="5" fill="#1F8F6A"/><circle cx="218" cy="108" r="5" fill="#1F8F6A"/>
+  <path d="M94 197h172" stroke="#C9D7DA" stroke-width="8" stroke-linecap="round"/>
+</svg>

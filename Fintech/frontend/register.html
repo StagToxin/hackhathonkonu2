@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pro Sicht | Kayıt</title>
+  <link rel="icon" href="assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="auth-page">
+  <main class="flex min-h-screen items-center justify-center px-4 py-10">
+    <section class="auth-card rounded-2xl p-7 sm:p-9" aria-labelledby="register-title">
+      <div class="mb-7 text-center">
+        <img src="assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-14 w-auto object-contain">
+        <h1 id="register-title" class="mt-6 text-2xl font-black text-text-dark">Firma Yetkilisi Kaydı</h1>
+        <p class="mt-2 text-sm font-medium text-text-secondary">Kaydınız admin onayından sonra tam erişime açılır.</p>
+      </div>
+
+      <form id="registerForm" class="grid gap-4" novalidate>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div data-field>
+            <label class="field-label" for="fullName">Ad-soyad</label>
+            <input class="input" id="fullName" name="fullName" data-validate="required" placeholder="Selin Arman">
+          </div>
+          <div data-field>
+            <label class="field-label" for="phone">Telefon</label>
+            <input class="input" id="phone" name="phone" data-validate="required|phone" placeholder="+90 5xx xxx xx xx">
+          </div>
+        </div>
+        <div data-field>
+          <label class="field-label" for="email">E-posta</label>
+          <input class="input" id="email" name="email" type="email" data-validate="required|email" placeholder="yetkili@firma.com">
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div data-field>
+            <label class="field-label" for="password">Şifre</label>
+            <input class="input" id="password" name="password" type="password" data-validate="required|password">
+          </div>
+          <div data-field>
+            <label class="field-label" for="passwordAgain">Şifre tekrar</label>
+            <input class="input" id="passwordAgain" name="passwordAgain" type="password" data-validate="required|match:#password">
+          </div>
+        </div>
+        <div data-field>
+          <label class="field-label" for="companyName">Firma unvanı</label>
+          <input class="input" id="companyName" name="companyName" data-validate="required" placeholder="Firma A.Ş.">
+        </div>
+        <div data-field>
+          <label class="field-label" for="taxNo">Vergi no</label>
+          <input class="input" id="taxNo" name="taxNo" inputmode="numeric" maxlength="10" data-validate="required|taxNo" placeholder="10 hane">
+        </div>
+        <button class="btn btn-primary w-full" type="submit">Hesap Oluştur</button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-text-secondary">
+        Zaten hesabınız var mı?
+        <a class="font-black text-primary-dark" href="index.html">Giriş yapın</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Validation.bind("#registerForm");
+    document.querySelector("#registerForm").addEventListener("submit", Auth.handleRegister);
+    lucide.createIcons();
+  </script>
+</body>
+</html>
+

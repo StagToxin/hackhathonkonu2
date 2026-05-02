@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Firmalar</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-logo" href="dashboard.html"><img src="../assets/logo-full.png" alt="Pro Sicht"></a>
+      <nav class="admin-nav">
+        <a data-nav href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <p class="nav-group-title">Firmalar</p>
+        <a data-nav href="companies.html"><i data-lucide="building-2"></i><span>Tümü</span></a>
+        <a data-nav href="pending-companies.html"><i data-lucide="user-check"></i><span>Onay Bekleyenler</span></a>
+        <a data-nav href="groups.html"><i data-lucide="network"></i><span>Gruplar</span></a>
+        <p class="nav-group-title">Finansal Yönetim</p>
+        <a data-nav href="financial-report.html"><i data-lucide="chart-no-axes-combined"></i><span>Finansal Rapor</span></a>
+        <a data-nav href="financial-status.html"><i data-lucide="activity"></i><span>Finansal Durum</span></a>
+        <a data-nav href="investment.html"><i data-lucide="landmark"></i><span>Yatırım</span></a>
+        <a data-nav href="presentation.html"><i data-lucide="presentation"></i><span>On Sunum</span></a>
+        <p class="nav-group-title">Mali Yapımız</p>
+        <a data-nav href="our-companies.html"><i data-lucide="briefcase-business"></i><span>Firmalarımız</span></a>
+        <a data-nav href="contracts.html"><i data-lucide="file-signature"></i><span>Sözleşmeler</span></a>
+        <a data-nav href="subscriptions.html"><i data-lucide="receipt"></i><span>Abonelik</span></a>
+        <a data-nav href="financial-process.html"><i data-lucide="workflow"></i><span>Finansal Süreç</span></a>
+        <a data-nav href="premium-requests.html"><i data-lucide="gem"></i><span>Premium Talepler</span></a>
+        <a data-nav href="logs.html"><i data-lucide="scroll-text"></i><span>Loglar</span></a>
+        <a data-nav href="settings.html"><i data-lucide="settings"></i><span>Ayarlar</span></a>
+      </nav>
+      <div class="admin-footer flex items-center justify-between gap-3">
+        <div class="user-meta min-w-0"><p class="truncate text-sm font-black" data-current-user>Admin</p><p class="text-xs text-white/55">Yönetici</p></div>
+        <button class="btn btn-ghost icon-btn text-white" data-logout title="Çıkış"><i data-lucide="log-out"></i></button>
+      </div>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-header">
+        <div><h1 class="text-2xl font-black text-text-dark">Firmalar</h1><p class="text-sm font-medium text-text-secondary">CRUD, filtreleme ve dışa aktarım</p></div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-secondary" id="exportBtn"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i> Excel</button>
+          <button class="btn btn-primary" id="openCompanyModal"><i data-lucide="plus" class="h-5 w-5"></i> Yeni Firma Ekle</button>
+        </div>
+      </header>
+      <main class="admin-content">
+        <section class="surface p-4">
+          <form id="filterForm" class="grid gap-3 lg:grid-cols-[1fr_180px_150px_170px_170px]">
+            <div data-field><label class="field-label" for="search">Arama</label><input class="input" id="search" name="search" placeholder="Şirket adı, vergi no, sözleşme türü"></div>
+            <div data-field><label class="field-label" for="contractType">Sözleşme türü</label><select class="select" id="contractType" name="contractType"><option value="">Tümü</option><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>Diğer</option></select></div>
+            <div data-field><label class="field-label" for="status">Durum</label><select class="select" id="status" name="status"><option value="">Tümü</option><option>Aktif</option><option>Pasif</option></select></div>
+            <div data-field><label class="field-label" for="contractEndFrom">Bitiş başlangıç</label><input class="input" id="contractEndFrom" name="contractEndFrom" type="date"></div>
+            <div data-field><label class="field-label" for="contractEndTo">Bitiş bitiş</label><input class="input" id="contractEndTo" name="contractEndTo" type="date"></div>
+          </form>
+        </section>
+
+        <section class="surface mt-5">
+          <div class="table-wrap" id="tableWrap"></div>
+          <div class="flex items-center justify-between px-5 py-4 text-sm font-bold text-text-secondary">
+            <span id="paginationInfo">0 kayıt</span>
+            <div class="flex gap-2"><button class="btn btn-secondary" disabled>Önceki</button><button class="btn btn-secondary" disabled>Sonraki</button></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="companyModal">
+    <section class="modal-panel">
+      <div class="flex items-center justify-between border-b border-slate-100 p-5">
+        <h2 class="text-xl font-black text-text-dark">Yeni Firma</h2>
+        <button class="btn btn-secondary icon-btn" id="closeCompanyModal" type="button"><i data-lucide="x"></i></button>
+      </div>
+      <form id="newCompanyForm" class="grid gap-4 p-5 sm:grid-cols-2" novalidate>
+        <div data-field><label class="field-label">Şirket adı</label><input class="input" name="name" data-validate="required"></div>
+        <div data-field><label class="field-label">Vergi No</label><input class="input" name="taxNo" maxlength="10" data-validate="required|taxNo"></div>
+        <div data-field><label class="field-label">Sözleşme türü</label><select class="select" name="contractType"><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>Diğer</option></select></div>
+        <div data-field><label class="field-label">Sözleşme bitiş</label><input class="input" name="contractEnd" type="date" data-validate="required"></div>
+        <div data-field><label class="field-label">Yıllık ciro</label><input class="input" name="actualTurnover" type="number" data-validate="required"></div>
+        <div data-field><label class="field-label">Yetkili</label><input class="input" name="contactName" data-validate="required"></div>
+        <div class="sm:col-span-2 flex justify-end gap-2"><button class="btn btn-secondary" type="button" id="cancelNewCompany">Vazgeç</button><button class="btn btn-primary" type="submit">Kaydet</button></div>
+      </form>
+    </section>
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/validation.js"></script>
+  <script src="../js/mock-data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/router.js"></script>
+  <script src="../js/export.js"></script>
+  <script>
+    let currentRows = [];
+    function badgeFor(type) {
+      return type === "Sistem" ? "badge-info" : type === "Analiz" ? "badge-success" : type === "Rapor" ? "badge-warning" : "badge-danger";
+    }
+    function render(rows) {
+      const wrap = document.querySelector("#tableWrap");
+      document.querySelector("#paginationInfo").textContent = `${rows.length} kayıt gösteriliyor`;
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="empty-state"><div class="grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-primary-dark"><i data-lucide="building-2" class="h-8 w-8"></i></div><h3>Henüz firma eklenmemiş</h3><p>Portföyünüzü yönetmek için ilk firmayı ekleyin.</p><button class="btn btn-primary" onclick="document.querySelector('#companyModal').classList.add('is-open')">Firma ekle</button></div>`;
+      } else {
+        wrap.innerHTML = `<table class="data-table"><thead><tr><th>Şirket adı</th><th>Vergi No</th><th>Sözleşme Türü</th><th>Bitiş</th><th>Yıllık Ciro</th><th>Finansal Skor</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((c) => `<tr><td class="font-black text-text-dark">${c.name}</td><td>${c.taxNo}</td><td><span class="badge ${badgeFor(c.contractType)}">${c.contractType}</span></td><td>${Utils.formatDate(c.contractEnd)}</td><td>${Utils.formatCurrency(c.actualTurnover)}</td><td><span class="font-black text-primary-dark">${c.score || 68}/100</span></td><td><span class="badge badge-success">${c.status || "Aktif"}</span></td><td><div class="flex gap-2"><a class="btn btn-secondary icon-btn" title="Görüntüle" href="company-detail.html?id=${c.id}"><i data-lucide="eye"></i></a><button class="btn btn-secondary icon-btn" title="Düzenle"><i data-lucide="pencil"></i></button><button class="btn btn-danger icon-btn" title="Sil" data-delete="${c.id}"><i data-lucide="trash-2"></i></button></div></td></tr>`).join("")}</tbody></table>`;
+      }
+      lucide.createIcons();
+      document.querySelectorAll("[data-delete]").forEach((btn) => btn.addEventListener("click", async () => {
+        await Api.deleteCompany(btn.dataset.delete);
+        Toast.show("Firma kaydı silindi.", { type: "success" });
+        loadRows();
+      }));
+    }
+    async function loadRows() {
+      const form = document.querySelector("#filterForm");
+      const data = await Api.companies(Object.fromEntries(new FormData(form).entries()));
+      currentRows = data.rows;
+      render(currentRows);
+    }
+    document.querySelector("#filterForm").addEventListener("input", Utils.debounce(loadRows, 70));
+    document.querySelector("#filterForm").addEventListener("change", loadRows);
+    document.querySelector("#openCompanyModal").addEventListener("click", () => document.querySelector("#companyModal").classList.add("is-open"));
+    document.querySelector("#closeCompanyModal").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
+    document.querySelector("#cancelNewCompany").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
+    document.querySelector("#exportBtn").addEventListener("click", () => Export.excel("firmalar.xlsx", currentRows));
+    Validation.bind("#newCompanyForm");
+    document.querySelector("#newCompanyForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!Validation.validateForm(event.currentTarget)) return;
+      await Api.createCompany(Object.fromEntries(new FormData(event.currentTarget).entries()));
+      Toast.show("Yeni firma eklendi.", { type: "success" });
+      document.querySelector("#companyModal").classList.remove("is-open");
+      event.currentTarget.reset();
+      loadRows();
+    });
+    loadRows();
+  </script>
+</body>
+</html>
+

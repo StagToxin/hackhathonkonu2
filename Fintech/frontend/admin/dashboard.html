@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Dashboard</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-logo" href="dashboard.html"><img src="../assets/logo-full.png" alt="Pro Sicht"></a>
+      <nav class="admin-nav" aria-label="Admin menü">
+        <a data-nav href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <p class="nav-group-title">Firmalar</p>
+        <a data-nav href="companies.html"><i data-lucide="building-2"></i><span>Tümü</span></a>
+        <a data-nav href="pending-companies.html"><i data-lucide="user-check"></i><span>Onay Bekleyenler</span></a>
+        <a data-nav href="groups.html"><i data-lucide="network"></i><span>Gruplar</span></a>
+        <p class="nav-group-title">Finansal Yönetim</p>
+        <a data-nav href="financial-report.html"><i data-lucide="chart-no-axes-combined"></i><span>Finansal Rapor</span></a>
+        <a data-nav href="financial-status.html"><i data-lucide="activity"></i><span>Finansal Durum</span></a>
+        <a data-nav href="investment.html"><i data-lucide="landmark"></i><span>Yatırım</span></a>
+        <a data-nav href="presentation.html"><i data-lucide="presentation"></i><span>On Sunum</span></a>
+        <p class="nav-group-title">Mali Yapımız</p>
+        <a data-nav href="our-companies.html"><i data-lucide="briefcase-business"></i><span>Firmalarımız</span></a>
+        <a data-nav href="contracts.html"><i data-lucide="file-signature"></i><span>Sözleşmeler</span></a>
+        <a data-nav href="subscriptions.html"><i data-lucide="receipt"></i><span>Abonelik</span></a>
+        <a data-nav href="financial-process.html"><i data-lucide="workflow"></i><span>Finansal Süreç</span></a>
+        <a data-nav href="premium-requests.html"><i data-lucide="gem"></i><span>Premium Talepler</span></a>
+        <a data-nav href="logs.html"><i data-lucide="scroll-text"></i><span>Loglar</span></a>
+        <a data-nav href="settings.html"><i data-lucide="settings"></i><span>Ayarlar</span></a>
+      </nav>
+      <div class="admin-footer flex items-center justify-between gap-3">
+        <div class="user-meta min-w-0"><p class="truncate text-sm font-black" data-current-user>Admin</p><p class="text-xs text-white/55">Yönetici</p></div>
+        <button class="btn btn-ghost icon-btn text-white" data-logout title="Çıkış"><i data-lucide="log-out"></i></button>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div>
+          <h1 class="text-2xl font-black text-text-dark">Dashboard</h1>
+          <p class="text-sm font-medium text-text-secondary">KPI, gelir trendi ve operasyon özeti</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-secondary icon-btn relative" title="Bildirimler"><i data-lucide="bell"></i><span class="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs font-black text-white" data-notification-count>0</span></button>
+          <button class="btn btn-secondary icon-btn" data-theme-toggle title="Tema"><i data-lucide="moon"></i></button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" id="kpiGrid"></section>
+
+        <section class="mt-5 grid gap-5 xl:grid-cols-2">
+          <article class="surface p-5">
+            <div class="mb-4 flex items-center justify-between"><h2 class="admin-section-title">Aylık Gelir Trendi</h2><span class="badge badge-success">Son 12 ay</span></div>
+            <div class="h-80"><canvas id="revenueChart"></canvas></div>
+          </article>
+          <article class="surface p-5">
+            <div class="mb-4 flex items-center justify-between"><h2 class="admin-section-title">Sözleşme Türü Dağılımı</h2><span class="badge badge-info">Portföy</span></div>
+            <div class="h-80"><canvas id="contractChart"></canvas></div>
+          </article>
+        </section>
+
+        <section class="mt-5 grid gap-5 xl:grid-cols-3">
+          <article class="surface p-5 xl:col-span-1">
+            <h2 class="admin-section-title mb-4">Son Aktiviteler</h2>
+            <div id="activityList" class="grid gap-3"></div>
+          </article>
+          <article class="surface p-5">
+            <div class="mb-4 flex items-center justify-between"><h2 class="admin-section-title">Premium Talepler</h2><a class="text-sm font-black text-primary-dark" href="premium-requests.html">Tümünü gör</a></div>
+            <div id="premiumList" class="grid gap-3"></div>
+          </article>
+          <article class="surface p-5">
+            <div class="mb-4 flex items-center justify-between"><h2 class="admin-section-title">Onay Bekleyen Firmalar</h2><a class="text-sm font-black text-primary-dark" href="pending-companies.html">İncele</a></div>
+            <div id="pendingList" class="grid gap-3"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/mock-data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/router.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/theme-toggle.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script>
+    const kpiMeta = [
+      ["totalCompanies", "Toplam Firma", "Geçen aya göre", "building-2"],
+      ["activeContracts", "Aktif Sözleşme", "Bitişi yaklaşan: ", "file-check-2"],
+      ["pendingCollection", "Bekleyen Tahsilat", "Tahsilat havuzu", "wallet-cards"],
+      ["monthlyRevenue", "Aylık Gelir", "Trend", "trending-up"]
+    ];
+    Api.dashboard().then((data) => {
+      const kpiGrid = document.querySelector("#kpiGrid");
+      kpiGrid.innerHTML = kpiMeta.map(([key, title, desc, icon]) => {
+        const value = key.includes("Collection") || key.includes("Revenue") ? Utils.formatCurrency(data.kpis[key]) : Utils.formatNumber(data.kpis[key]);
+        const sub = key === "totalCompanies" ? `%${data.kpis.companyGrowth} artış` : key === "activeContracts" ? `${desc}${data.kpis.contractsExpiringSoon}` : key === "monthlyRevenue" ? `%${data.kpis.revenueTrend} yukarı` : desc;
+        return `<article class="surface kpi-card"><div class="relative z-10 flex items-start justify-between"><div><p class="text-sm font-black text-text-secondary">${title}</p><p class="mt-3 text-3xl font-black text-text-dark">${value}</p><p class="mt-3 text-sm font-bold text-primary-dark">${sub}</p></div><div class="kpi-icon"><i data-lucide="${icon}"></i></div></div></article>`;
+      }).join("");
+      Charts.line(document.querySelector("#revenueChart"), data.revenueTrend.labels, data.revenueTrend.values, "Gelir");
+      Charts.doughnut(document.querySelector("#contractChart"), data.contractDistribution.labels, data.contractDistribution.values);
+      document.querySelector("#activityList").innerHTML = data.recentActivities.map((item) => `<div class="rounded-xl bg-bg-main p-3"><p class="font-black text-text-dark">${item.action}</p><p class="mt-1 text-xs font-semibold text-text-secondary">${item.user} · ${Utils.formatDate(item.time)}</p></div>`).join("");
+      document.querySelector("#premiumList").innerHTML = data.premiumRequests.slice(0, 5).map((item) => `<div class="flex items-center justify-between gap-3 rounded-xl bg-bg-main p-3"><div><p class="font-black">${item.company}</p><p class="text-xs font-semibold text-text-secondary">${item.packageName}</p></div><span class="badge badge-warning">${item.status}</span></div>`).join("");
+      document.querySelector("#pendingList").innerHTML = data.pendingCompanies.slice(0, 5).map((item) => `<div class="rounded-xl bg-bg-main p-3"><p class="font-black">${item.name}</p><p class="text-xs font-semibold text-text-secondary">${item.contactName} · ${Utils.formatDate(item.createdAt)}</p></div>`).join("");
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
+

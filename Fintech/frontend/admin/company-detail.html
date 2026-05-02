@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Firma Detay</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <a class="admin-logo" href="dashboard.html"><img src="../assets/logo-full.png" alt="Pro Sicht"></a>
+      <nav class="admin-nav">
+        <a data-nav href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <p class="nav-group-title">Firmalar</p>
+        <a data-nav href="companies.html"><i data-lucide="building-2"></i><span>Tümü</span></a>
+        <a data-nav href="pending-companies.html"><i data-lucide="user-check"></i><span>Onay Bekleyenler</span></a>
+        <a data-nav href="groups.html"><i data-lucide="network"></i><span>Gruplar</span></a>
+        <p class="nav-group-title">Finansal Yönetim</p>
+        <a data-nav href="financial-report.html"><i data-lucide="chart-no-axes-combined"></i><span>Finansal Rapor</span></a>
+        <a data-nav href="financial-status.html"><i data-lucide="activity"></i><span>Finansal Durum</span></a>
+        <a data-nav href="investment.html"><i data-lucide="landmark"></i><span>Yatırım</span></a>
+        <a data-nav href="presentation.html"><i data-lucide="presentation"></i><span>On Sunum</span></a>
+      </nav>
+      <div class="admin-footer flex items-center justify-between gap-3"><div class="user-meta"><p class="text-sm font-black" data-current-user>Admin</p><p class="text-xs text-white/55">Yönetici</p></div><button class="btn btn-ghost icon-btn text-white" data-logout title="Çıkış"><i data-lucide="log-out"></i></button></div>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-header">
+        <div><h1 class="text-2xl font-black text-text-dark">Firma Detay</h1><p class="text-sm font-medium text-text-secondary">OCR destekli profil ve finansal sekmeler</p></div>
+        <a class="btn btn-secondary" href="companies.html"><i data-lucide="arrow-left" class="h-5 w-5"></i> Listeye dön</a>
+      </header>
+      <main class="admin-content">
+        <section class="surface p-5" id="companyHero">
+          <div class="skeleton h-28"></div>
+        </section>
+
+        <section class="surface mt-5 p-5">
+          <div id="dropZone" class="drop-zone grid cursor-pointer place-items-center p-7 text-center">
+            <input id="ocrFile" class="hidden" type="file" accept=".pdf,.jpg,.jpeg,.png">
+            <i data-lucide="upload-cloud" class="mb-3 h-10 w-10 text-primary-dark"></i>
+            <p class="font-black text-text-dark">Belge yükleyin (PDF, JPG, PNG)</p>
+            <p class="mt-1 text-sm font-medium text-text-secondary">Sürükleyip bırakın veya seçmek için tıklayın.</p>
+          </div>
+          <div id="ocrStatus" class="mt-4 hidden items-center gap-3 rounded-xl bg-emerald-50 p-4 text-sm font-black text-primary-dark">
+            <span class="spinner"></span> Belge analiz ediliyor...
+          </div>
+        </section>
+
+        <section class="surface mt-5">
+          <div class="flex gap-5 overflow-x-auto border-b border-slate-100 px-5">
+            <button class="tab-button is-active" data-tab-target="general" type="button">Genel Bilgi</button>
+            <button class="tab-button" data-tab-target="financialReport" type="button">Finansal Rapor</button>
+            <button class="tab-button" data-tab-target="financialStatus" type="button">Finansal Durum</button>
+            <button class="tab-button" data-tab-target="investment" type="button">Yatırım</button>
+            <button class="tab-button" data-tab-target="presentation" type="button">On Sunum</button>
+          </div>
+
+          <div class="p-5">
+            <section data-tab-panel="general">
+              <form id="companyForm" class="grid gap-4 lg:grid-cols-3" novalidate>
+                <div data-field><label class="field-label">Şirket unvanı</label><input class="input" name="name" data-validate="required"></div>
+                <div data-field><label class="field-label">Vergi numarası</label><input class="input" name="taxNo" maxlength="10" data-validate="required|taxNo"></div>
+                <div data-field><label class="field-label">Ticaret sicil numarası</label><input class="input" name="tradeRegistryNo" data-validate="required"></div>
+                <div data-field><label class="field-label">Kuruluş tarihi</label><input class="input" name="foundedAt" type="date" data-validate="required"></div>
+                <div data-field><label class="field-label">Faaliyet alanı</label><input class="input" name="sector" data-validate="required"></div>
+                <div data-field><label class="field-label">Yetkili kişi adı</label><input class="input" name="contactName" data-validate="required"></div>
+                <div data-field><label class="field-label">Telefon</label><input class="input" name="phone" data-validate="required|phone"></div>
+                <div data-field><label class="field-label">E-posta</label><input class="input" name="email" type="email" data-validate="required|email"></div>
+                <div data-field class="lg:col-span-3"><label class="field-label">Kayıtlı adres - merkez</label><input class="input" name="address" data-validate="required"></div>
+                <div data-field><label class="field-label">Yıllık ciro tahmini</label><input class="input" name="estimatedTurnover" type="number" data-validate="required"></div>
+                <div data-field><label class="field-label">Yıllık gerçekleşen ciro</label><input class="input" name="actualTurnover" type="number" data-validate="required"></div>
+                <div data-field><label class="field-label">Sözleşme bedeli</label><input class="input" name="contractValue" type="number" data-validate="required"></div>
+                <div data-field><label class="field-label">Sözleşme başlangıç</label><input class="input" name="contractStart" type="date" data-validate="required"></div>
+                <div data-field><label class="field-label">Sözleşme bitiş</label><input class="input" name="contractEnd" type="date" data-validate="required"></div>
+                <div data-field><label class="field-label">Sözleşme türü</label><select class="select" name="contractType"><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>Diğer</option></select></div>
+                <div data-field><label class="field-label">Şubeler</label><textarea class="textarea" name="branches" placeholder="Her satıra bir şube"></textarea><button class="btn btn-secondary mt-2" type="button" id="addBranch"><i data-lucide="plus" class="h-4 w-4"></i> Şube ekle</button></div>
+                <div data-field><label class="field-label">Alt firmalar / bağımsız birimler</label><textarea class="textarea" name="subsidiaries" placeholder="Her satıra bir firma"></textarea><button class="btn btn-secondary mt-2" type="button" id="addSubsidiary"><i data-lucide="plus" class="h-4 w-4"></i> Alt firma ekle</button></div>
+                <div data-field><label class="field-label">Bağlı olduğu grup/holding</label><input class="input" name="group"></div>
+                <div data-field><label class="field-label">Harita lokasyonu</label><div class="grid h-[180px] place-items-center rounded-xl border border-slate-200 bg-bg-main text-center text-sm font-bold text-text-secondary"><i data-lucide="map-pinned" class="mb-2 h-8 w-8 text-primary-dark"></i> Leaflet harita alanı hazır</div></div>
+                <div class="lg:col-span-3 flex justify-end gap-2"><button class="btn btn-secondary" type="reset">Değişiklikleri sıfırla</button><button class="btn btn-primary" type="submit">Kaydet</button></div>
+              </form>
+            </section>
+            <section class="hidden" data-tab-panel="financialReport"><div class="empty-state"><h3>Finansal Rapor sekmesi</h3><p>Sonraki teslimde detaylı AI analiz ekranı buraya bağlanacak.</p><a class="btn btn-primary" href="financial-report.html">Sayfaya git</a></div></section>
+            <section class="hidden" data-tab-panel="financialStatus"><div class="empty-state"><h3>Finansal Durum sekmesi</h3><p>Nakit akışı, tahsilat ve banka özetleri sonraki teslim kapsamına ayrıldı.</p><a class="btn btn-primary" href="financial-status.html">Sayfaya git</a></div></section>
+            <section class="hidden" data-tab-panel="investment"><div class="empty-state"><h3>Yatırım sekmesi</h3><p>Portföy ve risk skoru ekranı ikinci kısımda genişletilecek.</p><a class="btn btn-primary" href="investment.html">Sayfaya git</a></div></section>
+            <section class="hidden" data-tab-panel="presentation"><div class="empty-state"><h3>On Sunum sekmesi</h3><p>.pptx üretim akışı sonraki görevde eklenecek.</p><a class="btn btn-primary" href="presentation.html">Sayfaya git</a></div></section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/validation.js"></script>
+  <script src="../js/mock-data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/router.js"></script>
+  <script src="../js/ocr-upload.js"></script>
+  <script>
+    let companyId = Utils.getQueryParam("id") || "cmp-1";
+    function lines(value) { return Array.isArray(value) ? value.join("\n") : value || ""; }
+    function fill(company) {
+      document.querySelector("#companyHero").innerHTML = `<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div class="flex items-center gap-4"><div class="grid h-16 w-16 place-items-center rounded-xl bg-emerald-50 text-2xl font-black text-primary-dark">${company.name.slice(0, 1)}</div><div><h2 class="text-2xl font-black text-text-dark">${company.name}</h2><p class="text-sm font-bold text-text-secondary">${company.taxNo} · ${company.contractType}</p></div></div><div class="flex flex-wrap gap-2"><span class="badge badge-success">${company.status}</span><span class="badge badge-info">Finansal Skor ${company.score}/100</span><span class="badge badge-warning">Bitiş ${Utils.formatDate(company.contractEnd)}</span></div></div>`;
+      const form = document.querySelector("#companyForm");
+      Object.entries(company).forEach(([key, value]) => {
+        if (!form.elements[key]) return;
+        form.elements[key].value = key === "branches" || key === "subsidiaries" ? lines(value) : value;
+      });
+      lucide.createIcons();
+    }
+    Api.company(companyId).then(fill);
+    Validation.bind("#companyForm");
+    document.querySelector("#companyForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!Validation.validateForm(event.currentTarget)) return;
+      const payload = Object.fromEntries(new FormData(event.currentTarget).entries());
+      payload.branches = payload.branches.split("\n").filter(Boolean);
+      payload.subsidiaries = payload.subsidiaries.split("\n").filter(Boolean);
+      await Api.updateCompany(companyId, payload);
+      Toast.show("Firma bilgileri kaydedildi.", { type: "success" });
+      fill({ ...payload, id: companyId, status: "Aktif", score: 82 });
+    });
+    document.querySelector("#addBranch").addEventListener("click", () => { const el = document.querySelector("[name='branches']"); el.value += `${el.value ? "\n" : ""}Yeni şube`; });
+    document.querySelector("#addSubsidiary").addEventListener("click", () => { const el = document.querySelector("[name='subsidiaries']"); el.value += `${el.value ? "\n" : ""}Yeni alt firma`; });
+    document.querySelectorAll("[data-tab-target]").forEach((button) => button.addEventListener("click", () => {
+      document.querySelectorAll("[data-tab-target]").forEach((item) => item.classList.remove("is-active"));
+      document.querySelectorAll("[data-tab-panel]").forEach((panel) => panel.classList.add("hidden"));
+      button.classList.add("is-active");
+      document.querySelector(`[data-tab-panel='${button.dataset.tabTarget}']`).classList.remove("hidden");
+    }));
+    OcrUpload.setup({ zone: "#dropZone", input: "#ocrFile", form: "#companyForm", status: "#ocrStatus" });
+  </script>
+</body>
+</html>
+

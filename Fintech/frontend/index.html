@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pro Sicht | Giriş</title>
+  <link rel="icon" href="assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="auth-page">
+  <main class="flex min-h-screen items-center justify-center px-4 py-10">
+    <section class="auth-card rounded-2xl p-7 sm:p-9" aria-labelledby="login-title">
+      <div class="mb-8 text-center">
+        <img src="assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-16 w-auto object-contain">
+        <h1 id="login-title" class="mt-7 text-2xl font-black text-text-dark">Finansal Analiz Platformu</h1>
+        <p class="mt-2 text-sm font-medium text-text-secondary">Admin veya firma yetkilisi hesabınızla giriş yapın.</p>
+      </div>
+
+      <form id="loginForm" class="grid gap-4" novalidate>
+        <div data-field>
+          <label class="field-label" for="email">E-posta</label>
+          <input class="input" id="email" name="email" type="email" autocomplete="email" data-validate="required|email" placeholder="admin@prosicht.com">
+        </div>
+        <div data-field>
+          <label class="field-label" for="password">Şifre</label>
+          <input class="input" id="password" name="password" type="password" autocomplete="current-password" data-validate="required|password" placeholder="En az 6 karakter">
+        </div>
+        <label class="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+          <input class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" id="remember" name="remember" type="checkbox">
+          Beni hatırla
+        </label>
+        <button class="btn btn-primary w-full" type="submit">Giriş Yap</button>
+      </form>
+
+      <div class="mt-6 rounded-xl bg-bg-main p-4 text-sm text-text-secondary">
+        <p class="font-bold text-text-dark">Demo hesapları</p>
+        <p class="mt-1">Admin: admin@prosicht.com / admin123</p>
+        <p>Kullanıcı: user@firma.com / user123</p>
+      </div>
+
+      <p class="mt-6 text-center text-sm text-text-secondary">
+        Hesabınız yok mu?
+        <a class="font-black text-primary-dark" href="register.html">Kayıt olun</a>
+      </p>
+    </section>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    Auth.redirectIfAuthed();
+    Validation.bind("#loginForm");
+    document.querySelector("#loginForm").addEventListener("submit", Auth.handleLogin);
+    lucide.createIcons();
+  </script>
+</body>
+</html>
+

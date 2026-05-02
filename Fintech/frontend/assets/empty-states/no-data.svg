@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="240" viewBox="0 0 360 240" role="img" aria-label="Boş veri">
+  <rect width="360" height="240" rx="18" fill="#F8FAFB"/>
+  <circle cx="180" cy="116" r="58" fill="#2DBE8E" opacity=".13"/>
+  <path d="M132 146h96M144 118h72M158 92h44" stroke="#1E3A46" stroke-width="12" stroke-linecap="round" opacity=".26"/>
+  <path d="M116 184h128" stroke="#2DBE8E" stroke-width="10" stroke-linecap="round" opacity=".55"/>
+</svg>
