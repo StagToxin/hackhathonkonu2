@@ -39,6 +39,42 @@
     });
   }
 
+  function isTableHeader(candidate, tableWrap) {
+    return Boolean(
+      candidate &&
+      candidate !== tableWrap &&
+      candidate.classList.contains("flex") &&
+      candidate.classList.contains("items-center") &&
+      candidate.querySelector(".admin-section-title")
+    );
+  }
+
+  function placeExportControl(table, wrapper, control) {
+    const tableWrap = table.closest(".table-wrap");
+    const header = isTableHeader(tableWrap?.previousElementSibling, tableWrap) ? tableWrap.previousElementSibling : null;
+
+    if (header) {
+      header.classList.add("export-header");
+      let actions = header.querySelector(".export-actions");
+      if (!actions) {
+        actions = document.createElement("div");
+        actions.className = "export-actions";
+        Array.from(header.children)
+          .filter((child) => !child.classList.contains("admin-section-title"))
+          .forEach((child) => actions.appendChild(child));
+        header.appendChild(actions);
+      }
+      actions.appendChild(control);
+      return;
+    }
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "export-table-toolbar";
+    toolbar.appendChild(control);
+    if (tableWrap && tableWrap.parentElement) tableWrap.parentElement.insertBefore(toolbar, tableWrap);
+    else wrapper.prepend(toolbar);
+  }
+
   function addExportControl(table, index) {
     if (table.dataset.exportReady === "true") return;
     table.dataset.exportReady = "true";
@@ -52,8 +88,7 @@
         <button type="button" data-export-type="csv">CSV</button>
         <button type="button" data-export-type="excel">Excel</button>
       </div>`;
-    wrapper.style.position = wrapper.style.position || "relative";
-    wrapper.prepend(control);
+    placeExportControl(table, wrapper, control);
     control.querySelector(".btn").addEventListener("click", () => control.querySelector(".export-menu").classList.toggle("hidden"));
     control.querySelectorAll("[data-export-type]").forEach((button) => {
       button.addEventListener("click", () => {

@@ -80,13 +80,26 @@
     const node = typeof form === "string" ? document.querySelector(form) : form;
     if (!node) return true;
     const inputs = Array.from(node.querySelectorAll("[data-validate]"));
-    const valid = inputs.map(validateInput).every(Boolean);
+    const valid = inputs.map(validateInput).every(Boolean) && validateContractDates(node);
     if (!valid) {
       const first = node.querySelector('[aria-invalid="true"]');
       first?.scrollIntoView({ behavior: "smooth", block: "center" });
       first?.focus();
     }
     return valid;
+  }
+
+  function validateContractDates(form) {
+    const start = form.querySelector('[name="contractStart"]')?.value;
+    const endInput = form.querySelector('[name="contractEnd"]');
+    const end = endInput?.value;
+    if (!start || !end || !endInput) return true;
+    if (new Date(end) <= new Date(start)) {
+      setError(endInput, messages.dateAfter);
+      return false;
+    }
+    setError(endInput, "");
+    return true;
   }
 
   function bind(form) {
@@ -100,5 +113,5 @@
     });
   }
 
-  window.Validation = { bind, validateForm, validateInput, validators };
+  window.Validation = { bind, validateForm, validateInput, validateContractDates, validators };
 })();

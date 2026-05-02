@@ -241,10 +241,10 @@
 
   const logs = saved.logs || [...seededLogs, ...generatedLogs];
 
-  const users = [
-    { email: "admin@prosicht.com", password: "admin123", name: "Pro Sicht Admin", role: "admin" },
-    { email: "user@firma.com", password: "user123", name: "Firma Yetkilisi", role: "user", companyId: "cmp-1" },
-    { email: "pending@firma.com", password: "user123", name: "Onay Bekleyen Yetkili", role: "user", companyId: "pending-demo" }
+  const users = saved.users || [
+    { id: "usr-admin", email: "admin@prosicht.com", password: "admin123", name: "Pro Sicht Admin", role: "admin", approvalStatus: "approved", unlockedFeatures: ["all_premium"] },
+    { id: "usr-demo", email: "user@firma.com", password: "user123", name: "Firma Yetkilisi", role: "user", companyId: "cmp-1", approvalStatus: "approved", unlockedFeatures: [] },
+    { id: "usr-pending", email: "pending@firma.com", password: "user123", name: "Onay Bekleyen Yetkili", role: "user", companyId: "pending-demo", approvalStatus: "pending", unlockedFeatures: [] }
   ];
 
   function save() {
@@ -254,7 +254,8 @@
       premiumRequests,
       groups,
       notifications,
-      logs
+      logs,
+      users
     }));
   }
 

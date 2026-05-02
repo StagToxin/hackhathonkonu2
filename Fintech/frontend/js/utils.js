@@ -54,4 +54,5 @@
   };
 
   window.Utils = Utils;
+  window.formatCurrency = Utils.formatCurrency;
 })();

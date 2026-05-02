@@ -42,7 +42,7 @@
     const form = document.querySelector("#companyForm");
     Api.myCompany().then((company) => {
       Object.entries(company).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value || ""; });
-      document.querySelector("#approvalAlert").classList.toggle("hidden", company.approvalStatus !== "Bekliyor");
+      document.querySelector("#approvalAlert").classList.toggle("hidden", !["Bekliyor", "pending"].includes(company.approvalStatus));
     });
     Validation.bind(form);
     OcrUpload.setup({ zone: "#dropZone", input: "#ocrFile", form: "#companyForm", status: "#ocrStatus" });

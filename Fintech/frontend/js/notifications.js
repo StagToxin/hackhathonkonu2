@@ -10,6 +10,9 @@
   }
 
   function getItems() {
+    const user = window.Auth?.getUser?.() || JSON.parse(window.localStorage.getItem("authUser") || window.localStorage.getItem("user") || "null");
+    const allUserNotifications = JSON.parse(window.localStorage.getItem("userNotifications") || "{}");
+    const directItems = user?.id ? (allUserNotifications[user.id] || []) : [];
     const userItems = window.MockData?.notifications || [];
     const premiumItems = (window.MockData?.premiumRequests || [])
       .filter((item) => item.status === "Bekliyor")
@@ -21,7 +24,41 @@
         createdAt: item.requestedAt,
         read: false
       }));
-    return [...premiumItems, ...userItems].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return [...premiumItems, ...directItems, ...userItems].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  function addNotification(userId, notification) {
+    if (!userId) return;
+    const allNotifications = JSON.parse(window.localStorage.getItem("userNotifications") || "{}");
+    if (!allNotifications[userId]) allNotifications[userId] = [];
+    allNotifications[userId].unshift({
+      id: `notif-${Date.now()}`,
+      read: false,
+      createdAt: new Date().toISOString(),
+      ...notification
+    });
+    allNotifications[userId] = allNotifications[userId].slice(0, 50);
+    window.localStorage.setItem("userNotifications", JSON.stringify(allNotifications));
+    window.dispatchEvent(new CustomEvent("notificationschange"));
+  }
+
+  function getUserNotifications() {
+    const user = window.Auth?.getUser?.() || JSON.parse(window.localStorage.getItem("authUser") || window.localStorage.getItem("user") || "null");
+    if (!user?.id) return [];
+    const all = JSON.parse(window.localStorage.getItem("userNotifications") || "{}");
+    return all[user.id] || [];
+  }
+
+  function markAsRead(notifId) {
+    const user = window.Auth?.getUser?.() || JSON.parse(window.localStorage.getItem("authUser") || window.localStorage.getItem("user") || "null");
+    if (!user?.id) return;
+    const all = JSON.parse(window.localStorage.getItem("userNotifications") || "{}");
+    const item = all[user.id]?.find((notification) => notification.id === notifId);
+    if (item) {
+      item.read = true;
+      window.localStorage.setItem("userNotifications", JSON.stringify(all));
+      window.dispatchEvent(new CustomEvent("notificationschange"));
+    }
   }
 
   function icon(type) {
@@ -94,5 +131,6 @@
   });
   document.addEventListener("DOMContentLoaded", init);
   window.addEventListener("notificationschange", init);
-  window.Notifications = { init, getItems };
+  window.setInterval(init, 5000);
+  window.Notifications = { init, getItems, addNotification, getUserNotifications, markAsRead };
 })();

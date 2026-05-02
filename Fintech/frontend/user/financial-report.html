@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kullanıcı | Finansal Rapor</title>
+  <title>KullanÄ±cÄ± | Finansal Rapor</title>
   <link rel="icon" href="../assets/favicon.ico">
   <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
   <script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script><script src="https://unpkg.com/lucide@latest"></script>
@@ -15,40 +15,52 @@
     <section class="grid gap-5 xl:grid-cols-[1fr_380px]">
       <main class="grid gap-5">
         <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Mali Veriler</h2><div id="summaryGrid" class="mt-4 grid gap-3 md:grid-cols-3"></div></article>
-        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Alış-Satış Koşulları</h2><div class="mt-4 grid gap-3 md:grid-cols-3"><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Ortalama vade</p><p class="text-text-secondary">45 gün</p></div><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Ödeme</p><p class="text-text-secondary">%30 peşin</p></div><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Limit</p><p class="text-text-secondary">₺8,5M</p></div></div></article>
+        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">AlÄ±ÅŸ-SatÄ±ÅŸ KoÅŸullarÄ±</h2><div class="mt-4 grid gap-3 md:grid-cols-3"><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Ortalama vade</p><p class="text-text-secondary">45 gÃ¼n</p></div><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Ã–deme</p><p class="text-text-secondary">%30 peÅŸin</p></div><div class="rounded-xl bg-bg-main p-4"><p class="font-black">Limit</p><p class="text-text-secondary">â‚º8,5M</p></div></div></article>
         <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Banka ve Banka Verileri</h2><div class="table-wrap mt-4"><table class="data-table" id="banksTable"></table></div></article>
         <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Tahsilatlar</h2><div class="mt-4 grid gap-4 xl:grid-cols-2"><div class="table-wrap"><table class="data-table" id="pendingTable"></table></div><div class="table-wrap"><table class="data-table" id="paidTable"></table></div></div></article>
-        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Nakit Akış Tablosu</h2><div class="mt-4 h-72"><canvas id="cashflowChart"></canvas></div></article>
-        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Borç / Alacak</h2><div class="mt-4 h-64"><canvas id="debtChart"></canvas></div></article>
-        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Devam Eden ve Biten İşler</h2><div id="projectGrid" class="mt-4 grid gap-3 md:grid-cols-2"></div></article>
+        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Nakit AkÄ±ÅŸ Tablosu</h2><div class="mt-4 h-72"><canvas id="cashflowChart"></canvas></div></article>
+        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">BorÃ§ / Alacak</h2><div class="mt-4 h-64"><canvas id="debtChart"></canvas></div></article>
+        <article class="user-card p-5"><h2 class="text-xl font-black text-text-dark">Devam Eden ve Biten Ä°ÅŸler</h2><div id="projectGrid" class="mt-4 grid gap-3 md:grid-cols-2"></div></article>
       </main>
       <aside class="grid content-start gap-5">
-        <article class="user-card locked-card p-5">
-          <div class="locked-content"><h2 class="text-xl font-black text-text-dark">Uzman Görüşü</h2><p class="mt-3 text-text-secondary">Finans uzmanı tarafından yazılan yorumlu rapor, risk notları ve aksiyon önerileri.</p></div>
-          <div class="locked-overlay"><div class="locked-overlay-inner"><i data-lucide="lock" class="h-9 w-9 text-primary-dark"></i><p class="font-black text-text-dark">Premium ile aç</p><button class="btn btn-primary" data-premium-open="expert">Premium ile aç</button></div></div>
+        <article class="user-card locked-card p-5" data-feature="expert_opinion">
+          <div class="locked-content"><h2 class="text-xl font-black text-text-dark">Uzman GÃ¶rÃ¼ÅŸÃ¼</h2><p class="mt-3 text-text-secondary">Finans uzmanÄ± tarafÄ±ndan yazÄ±lan yorumlu rapor, risk notlarÄ± ve aksiyon Ã¶nerileri.</p></div>
+          <div class="locked-overlay"><div class="locked-overlay-inner"><i data-lucide="lock" class="h-9 w-9 text-primary-dark"></i><p class="font-black text-text-dark">Premium ile aÃ§</p><button class="btn btn-primary" data-premium-open="expert">Premium ile aÃ§</button></div></div>
         </article>
-        <article class="user-card locked-card p-5">
-          <div class="locked-content"><h2 class="text-xl font-black text-text-dark">AI Analiz</h2><p class="mt-3 text-text-secondary">LLM destekli güçlü/zayıf yönler, riskler, likidite ve öneriler.</p></div>
-          <div class="locked-overlay"><div class="locked-overlay-inner"><i data-lucide="lock" class="h-9 w-9 text-primary-dark"></i><p class="font-black text-text-dark">Premium ile aç</p><button class="btn btn-primary" data-premium-open="basic-ai">Premium ile aç</button></div></div>
+        <article class="user-card locked-card p-5" data-feature="ai_analysis">
+          <div class="locked-content"><h2 class="text-xl font-black text-text-dark">AI Analiz</h2><p class="mt-3 text-text-secondary">LLM destekli gÃ¼Ã§lÃ¼/zayÄ±f yÃ¶nler, riskler, likidite ve Ã¶neriler.</p></div>
+          <div class="locked-overlay"><div class="locked-overlay-inner"><i data-lucide="lock" class="h-9 w-9 text-primary-dark"></i><p class="font-black text-text-dark">Premium ile aÃ§</p><button class="btn btn-primary" data-premium-open="basic-ai">Premium ile aÃ§</button></div></div>
         </article>
       </aside>
     </section>
   </template>
   <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/charts.js"></script><script src="../js/premium-modal.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/user-layout.js"></script>
   <script>
-    UserLayout.render({ active: "financial-report.html", title: "Finansal Raporum", subtitle: "Kısıtlı kullanıcı görünümü ve premium kilitli analiz alanları", content: document.querySelector("#pageTemplate").innerHTML });
-    function table(id, headers, rows, cells) { document.querySelector(id).innerHTML = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr>${cells(row).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`; }
+    UserLayout.render({ active: "financial-report.html", title: "Finansal Raporum", subtitle: "KÄ±sÄ±tlÄ± kullanÄ±cÄ± gÃ¶rÃ¼nÃ¼mÃ¼ ve premium kilitli analiz alanlarÄ±", content: document.querySelector("#pageTemplate").innerHTML });
+    function unlockPremiumCards() {
+      document.querySelectorAll("[data-feature]").forEach((card) => {
+        const feature = card.dataset.feature;
+        if (!Auth.hasFeatureAccess(feature)) return;
+        card.classList.remove("locked-card");
+        card.querySelector(".locked-overlay")?.remove();
+        const content = card.querySelector(".locked-content");
+        if (feature === "ai_analysis") content.insertAdjacentHTML("beforeend", `<div class="mt-4 rounded-xl bg-bg-main p-4"><p class="font-black text-primary-dark">AI Analiz erişimi açık</p><p class="mt-2 text-sm font-semibold text-text-secondary">Güçlü yönler, riskler, likidite ve öneriler premium paketinizle görüntülenebilir.</p></div>`);
+        if (feature === "expert_opinion") content.insertAdjacentHTML("beforeend", `<div class="mt-4 rounded-xl bg-bg-main p-4"><p class="font-black text-primary-dark">Uzman Görüşü erişimi açık</p><p class="mt-2 text-sm font-semibold text-text-secondary">Finans uzmanı yorumları ve aksiyon önerileri paketinizle aktiftir.</p></div>`);
+      });
+    }    function table(id, headers, rows, cells) { document.querySelector(id).innerHTML = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr>${cells(row).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`; }
     Api.financialStatus("me").then((data) => {
-      document.querySelector("#summaryGrid").innerHTML = [["Hasılat", data.summary.revenue], ["Net kâr", data.summary.netProfit], ["Özkaynak", data.summary.equity]].map(([k,v])=>`<div class="rounded-xl bg-bg-main p-4"><p class="text-sm font-black text-text-secondary">${k}</p><p class="mt-2 text-2xl font-black text-text-dark">${Utils.formatCurrency(v)}</p></div>`).join("");
-      table("#banksTable", ["Banka","Bakiye","Kredi Limiti","Kullanım"], data.banks, b=>[b.name, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage)]);
+      document.querySelector("#summaryGrid").innerHTML = [["HasÄ±lat", data.summary.revenue], ["Net kÃ¢r", data.summary.netProfit], ["Ã–zkaynak", data.summary.equity]].map(([k,v])=>`<div class="rounded-xl bg-bg-main p-4"><p class="text-sm font-black text-text-secondary">${k}</p><p class="mt-2 text-2xl font-black text-text-dark">${Utils.formatCurrency(v)}</p></div>`).join("");
+      table("#banksTable", ["Banka","Bakiye","Kredi Limiti","KullanÄ±m"], data.banks, b=>[b.name, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage)]);
       table("#pendingTable", ["Bekleyen","Tutar","Vade"], data.pendingCollections, r=>[r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due)]);
-      table("#paidTable", ["Yapılan","Tutar","Tarih"], data.paidCollections, r=>[r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.date)]);
+      table("#paidTable", ["YapÄ±lan","Tutar","Tarih"], data.paidCollections, r=>[r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.date)]);
       Charts.line(document.querySelector("#cashflowChart"), data.cashflow.labels, data.cashflow.inflow.map((v,i)=>(v-data.cashflow.outflow[i])*1000000), "Net Nakit");
-      Charts.doughnut(document.querySelector("#debtChart"), ["Borç", "Alacak"], [data.summary.totalDebt, data.summary.totalReceivable]);
-      document.querySelector("#projectGrid").innerHTML = data.projects.map(p=>`<div class="rounded-xl bg-bg-main p-4"><p class="font-black text-text-dark">${p.name}</p><p class="mt-1 text-sm text-text-secondary">${p.status} · ${Utils.formatCurrency(p.amount)}</p></div>`).join("");
+      Charts.doughnut(document.querySelector("#debtChart"), ["BorÃ§", "Alacak"], [data.summary.totalDebt, data.summary.totalReceivable]);
+      document.querySelector("#projectGrid").innerHTML = data.projects.map(p=>`<div class="rounded-xl bg-bg-main p-4"><p class="font-black text-text-dark">${p.name}</p><p class="mt-1 text-sm text-text-secondary">${p.status} Â· ${Utils.formatCurrency(p.amount)}</p></div>`).join("");
       lucide.createIcons();
     });
+    unlockPremiumCards();
     document.querySelectorAll("[data-premium-open]").forEach((button)=>button.addEventListener("click",()=>PremiumModal.open(button.dataset.premiumOpen)));
   </script>
 </body>
 </html>
+

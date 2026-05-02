@@ -250,10 +250,43 @@ body.dark .ai-mark {
 }
 
 .export-control {
-  position: absolute;
+  position: relative;
   z-index: 12;
-  top: 0.8rem;
-  right: 0.8rem;
+  flex: 0 0 auto;
+}
+
+.export-header {
+  gap: 0.75rem;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.export-table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.85rem 0.85rem 0.75rem;
+}
+
+.surface.p-5 > .export-table-toolbar {
+  padding: 0 0 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .export-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .export-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .export-menu {
