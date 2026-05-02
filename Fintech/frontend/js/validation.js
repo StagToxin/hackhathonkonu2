@@ -5,7 +5,10 @@
     password: "Şifre en az 6 karakter olmalıdır.",
     taxNo: "Vergi numarası 10 hane olmalıdır.",
     phone: "Geçerli bir telefon numarası girin.",
-    match: "Alanlar birbiriyle eşleşmiyor."
+    match: "Alanlar birbiriyle eşleşmiyor.",
+    registry: "Ticaret sicil no yalnızca rakam ve tire içerebilir.",
+    money: "Negatif olmayan sayısal bir tutar girin.",
+    dateAfter: "Bitiş tarihi başlangıç tarihinden sonra olmalıdır."
   };
 
   const validators = {
@@ -23,6 +26,12 @@
     },
     phone(value) {
       return /^[+()\d\s-]{10,18}$/.test(String(value || "").trim());
+    },
+    registry(value) {
+      return !value || /^[\d-]+$/.test(String(value || "").trim());
+    },
+    money(value) {
+      return value === "" || (!Number.isNaN(Number(value)) && Number(value) >= 0);
     }
   };
 
@@ -50,6 +59,14 @@
         }
         continue;
       }
+      if (rule.startsWith("dateAfter:")) {
+        const target = document.querySelector(rule.split(":")[1]);
+        if (target && target.value && value && new Date(value) <= new Date(target.value)) {
+          setError(input, messages.dateAfter);
+          return false;
+        }
+        continue;
+      }
       if (validators[rule] && !validators[rule](value)) {
         setError(input, messages[rule]);
         return false;
@@ -63,7 +80,13 @@
     const node = typeof form === "string" ? document.querySelector(form) : form;
     if (!node) return true;
     const inputs = Array.from(node.querySelectorAll("[data-validate]"));
-    return inputs.map(validateInput).every(Boolean);
+    const valid = inputs.map(validateInput).every(Boolean);
+    if (!valid) {
+      const first = node.querySelector('[aria-invalid="true"]');
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      first?.focus();
+    }
+    return valid;
   }
 
   function bind(form) {

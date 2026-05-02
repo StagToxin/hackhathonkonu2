@@ -202,19 +202,49 @@
 
   const groups = saved.groups || [
     { id: "grp-1", name: "Nova Holding", description: "Tekstil ve dış ticaret firmaları", companies: ["Nova Tekstil A.Ş."], turnover: 128000000, debt: 38400000, riskScore: 58 },
-    { id: "grp-2", name: "Atlas Grup", description: "Enerji üretimi ve bakım şirketleri", companies: ["Atlas Enerji Sanayi A.Ş."], turnover: 238000000, debt: 67400000, riskScore: 49 }
+    { id: "grp-2", name: "Atlas Grup", description: "Enerji üretimi ve bakım şirketleri", companies: ["Atlas Enerji Sanayi A.Ş."], turnover: 238000000, debt: 67400000, riskScore: 49 },
+    { id: "grp-3", name: "Pro Sicht Demo Holding", description: "Demo konsolide görünüm için üç firma", companies: companies.map((company) => company.name), turnover: 333000000, debt: 108000000, riskScore: 54 }
   ];
 
-  const logs = saved.logs || [
+  const premiumPackages = [
+    { id: "basic-ai", name: "Temel Analiz", price: "₺499/ay", content: "AI destekli otomatik finansal analiz raporu", features: ["AI finansal analiz", "Markdown rapor", "PDF çıktısı"], popular: false },
+    { id: "expert", name: "Uzman Görüşü", price: "₺999/ay", content: "Uzman tarafından yazılan yorumlu rapor", features: ["Uzman raporu", "Risk yorumu", "Öncelikli inceleme"], popular: false },
+    { id: "bundle", name: "Premium Bundle", price: "₺1.499/ay", content: "AI Analiz + Uzman Görüşü + On Sunum", features: ["AI Analiz", "Uzman Görüşü", "On Sunum", "Premium destek"], popular: true }
+  ];
+
+  const notifications = saved.notifications || [
+    { id: "ntf-1", type: "premium", title: "Premium talebiniz alındı", message: "Premium Bundle talebiniz admin onayına gönderildi.", createdAt: "2026-05-02T12:10:00", read: false },
+    { id: "ntf-2", type: "contract", title: "Sözleşme bitişi yaklaşıyor", message: "Nova Tekstil sözleşmesi 2026-12-31 tarihinde bitecek.", createdAt: "2026-05-01T10:30:00", read: false },
+    { id: "ntf-3", type: "system", title: "Demo verisi hazır", message: "Finansal rapor ve banka verileri örnek veriyle dolduruldu.", createdAt: "2026-04-30T09:00:00", read: true }
+  ];
+
+  const seededLogs = [
     { id: "log-seed-1", createdAt: "2026-05-02T12:20:00", user: "admin@prosicht.com", action: "auth.login", type: "Auth", status: "success", detail: { ip: "127.0.0.1", role: "admin" } },
     { id: "log-seed-2", createdAt: "2026-05-02T11:40:00", user: "selin@novatekstil.com", action: "ai.financial_analysis", type: "AI", status: "success", detail: { responseTimeMs: 4300, model: "mock-llm", prompt: "Finansal oran analizi üret" } },
     { id: "log-seed-3", createdAt: "2026-05-02T10:05:00", user: "system", action: "ocr.parse", type: "OCR", status: "success", detail: { file: "vergi-levhasi.pdf", responseTimeMs: 1180 } },
     { id: "log-seed-4", createdAt: "2026-05-01T15:10:00", user: "admin@prosicht.com", action: "company.update", type: "CRUD", status: "success", detail: { company: "Mavi Lojistik Ltd.", fields: ["contractEnd"] } }
   ];
 
+  const generatedLogs = Array.from({ length: 50 }, (_, index) => {
+    const types = ["Auth", "CRUD", "AI", "OCR", "Premium", "Hata"];
+    const type = types[index % types.length];
+    return {
+      id: `log-demo-${index + 1}`,
+      createdAt: new Date(Date.UTC(2026, 4, 2, 9, 0 - index * 13)).toISOString(),
+      user: index % 3 === 0 ? "admin@prosicht.com" : index % 3 === 1 ? "user@firma.com" : "system",
+      action: `${type.toLocaleLowerCase("tr-TR")}.demo_event_${index + 1}`,
+      type,
+      status: type === "Hata" && index % 2 === 0 ? "error" : "success",
+      detail: { demo: true, responseTimeMs: 800 + index * 37, companyId: companies[index % companies.length].id }
+    };
+  });
+
+  const logs = saved.logs || [...seededLogs, ...generatedLogs];
+
   const users = [
     { email: "admin@prosicht.com", password: "admin123", name: "Pro Sicht Admin", role: "admin" },
-    { email: "user@firma.com", password: "user123", name: "Firma Yetkilisi", role: "user", companyId: "cmp-1" }
+    { email: "user@firma.com", password: "user123", name: "Firma Yetkilisi", role: "user", companyId: "cmp-1" },
+    { email: "pending@firma.com", password: "user123", name: "Onay Bekleyen Yetkili", role: "user", companyId: "pending-demo" }
   ];
 
   function save() {
@@ -223,6 +253,7 @@
       pendingCompanies,
       premiumRequests,
       groups,
+      notifications,
       logs
     }));
   }
@@ -234,6 +265,8 @@
     contractDistribution,
     recentActivities,
     premiumRequests,
+    premiumPackages,
+    notifications,
     financial,
     investments,
     contracts,

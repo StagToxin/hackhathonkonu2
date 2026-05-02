@@ -1,2 +1,63 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kullanıcı | Dashboard</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/user.css"></head><body data-requires-role="user"><div class="user-shell"><aside class="user-sidebar"><a class="user-logo" href="dashboard.html"><img src="../assets/logo-full.png" alt="Pro Sicht" class="h-12"></a><nav class="user-nav"><a data-nav href="dashboard.html"><i data-lucide="home"></i>Dashboard</a><a data-nav href="company-info.html"><i data-lucide="building"></i>Firma Bilgileri</a><a data-nav href="financial-report.html"><i data-lucide="chart-line"></i>Finansal Rapor</a><a data-nav href="premium.html"><i data-lucide="gem"></i>Premium</a><a data-nav href="notifications.html"><i data-lucide="bell"></i>Bildirimler</a></nav></aside><main><header class="user-header"><div><h1 class="text-2xl font-black text-text-dark">Firma Paneli</h1><p class="text-sm font-medium text-text-secondary" data-current-user>Kullanıcı</p></div><button class="btn btn-secondary" data-logout>Çıkış</button></header><section class="user-content"><div class="user-hero"><h2 class="text-2xl font-black">Finansal görünümünüz hazırlanıyor</h2><p class="mt-2 max-w-2xl text-white/85">Bu panel admin tarafına göre daha sade tutuldu. Firma bilgileri, kısıtlı finansal rapor ve premium talep akışı sonraki teslimde açılacak.</p></div></section></main></div><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script>lucide.createIcons()</script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kullanıcı | Dashboard</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/user.css">
+</head>
+<body data-requires-role="user">
+  <div id="userPage"></div>
+  <template id="pageTemplate">
+    <section class="user-hero">
+      <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p class="text-sm font-black text-white/75">Hoş geldiniz</p>
+          <h2 class="mt-2 text-3xl font-black" id="welcomeTitle">Firma Paneli</h2>
+          <p class="mt-2 max-w-2xl text-white/82">Finansal görünümünüz, tahsilatlarınız ve premium erişim talepleriniz tek yerde.</p>
+        </div>
+        <span class="badge bg-white/18 text-white" id="activePackage">Standart</span>
+      </div>
+    </section>
+    <section class="mt-5 grid gap-4 md:grid-cols-3" id="summaryCards"></section>
+    <section class="mt-5 grid gap-5 xl:grid-cols-[1fr_380px]">
+      <article class="user-card p-5">
+        <h2 class="text-xl font-black text-text-dark">Son Aktiviteler</h2>
+        <div id="activityList" class="mt-4 grid gap-3"></div>
+      </article>
+      <article class="user-card overflow-hidden">
+        <div class="bg-gradient-to-br from-primary to-text-dark p-5 text-white">
+          <i data-lucide="sparkles" class="h-8 w-8"></i>
+          <h2 class="mt-4 text-2xl font-black">AI Analizi ile derinlemesine inceleyin</h2>
+          <p class="mt-2 text-white/80">Riskleri, likiditeyi ve önerileri otomatik yorumlayan premium raporu keşfedin.</p>
+        </div>
+        <div class="p-5">
+          <a class="btn btn-primary w-full" href="premium.html"><i data-lucide="gem" class="h-5 w-5"></i> Hemen Keşfet</a>
+        </div>
+      </article>
+    </section>
+  </template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/user-layout.js"></script>
+  <script>
+    UserLayout.render({ active: "dashboard.html", title: "Ana Sayfa", subtitle: "Firma finansal özetiniz", content: document.querySelector("#pageTemplate").innerHTML });
+    Api.userDashboard().then((data) => {
+      document.querySelector("#welcomeTitle").textContent = `${data.company.name} paneli`;
+      document.querySelector("#activePackage").textContent = `Aktif paket: ${data.activePackage}`;
+      const cards = [
+        ["Bekleyen tahsilat", Utils.formatCurrency(data.pendingCollection), "wallet"],
+        ["Banka bakiyesi", Utils.formatCurrency(data.bankBalance), "landmark"],
+        ["Son rapor tarihi", Utils.formatDate(data.lastReportAt), "file-clock"]
+      ];
+      document.querySelector("#summaryCards").innerHTML = cards.map(([title, value, icon]) => `<article class="user-card p-5"><div class="flex items-start justify-between gap-3"><div><p class="text-sm font-black text-text-secondary">${title}</p><p class="mt-3 text-2xl font-black text-text-dark">${value}</p></div><div class="user-stat-icon"><i data-lucide="${icon}"></i></div></div></article>`).join("");
+      document.querySelector("#activityList").innerHTML = data.activities.slice(0, 3).map((item) => `<div class="rounded-xl bg-bg-main p-4 font-bold text-text-dark">${item}</div>`).join("");
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

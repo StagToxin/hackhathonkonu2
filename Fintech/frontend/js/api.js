@@ -330,6 +330,113 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
         return group;
       });
     },
+    myCompany() {
+      return withFallback("/api/companies/me", {}, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        if (user?.companyId === "pending-demo") {
+          return {
+            id: "pending-demo",
+            name: "Onay Bekleyen Demo Ltd.",
+            taxNo: "9988776655",
+            tradeRegistryNo: "IST-NEW-001",
+            contactName: user.name,
+            phone: "+90 555 000 00 00",
+            email: user.email,
+            address: "İstanbul",
+            approvalStatus: "Bekliyor",
+            packageName: "Standart"
+          };
+        }
+        const company = window.MockData.companies.find((item) => item.id === user?.companyId) || window.MockData.companies[0];
+        return { ...company, approvalStatus: "Onaylandı", packageName: "Standart" };
+      });
+    },
+    updateMyCompany(payload) {
+      return withFallback("/api/companies/me", {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      }, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        const index = window.MockData.companies.findIndex((item) => item.id === user?.companyId);
+        if (index >= 0) window.MockData.companies[index] = { ...window.MockData.companies[index], ...payload };
+        window.MockData.pendingCompanies.unshift({
+          id: `upd-${Date.now()}`,
+          name: payload.name,
+          contactName: payload.contactName,
+          email: payload.email,
+          taxNo: payload.taxNo,
+          createdAt: new Date().toISOString(),
+          status: "Güncelleme Bekliyor"
+        });
+        log("company.user_update_request", { type: "CRUD", company: payload.name });
+        window.MockData.save();
+        return { ok: true, approvalStatus: "Bekliyor" };
+      });
+    },
+    userDashboard() {
+      return withFallback("/api/user/dashboard", {}, () => {
+        const company = window.MockData.companies[0];
+        const pendingCollection = window.MockData.financial.pendingCollections.reduce((sum, row) => sum + row.amount, 0);
+        const bankBalance = window.MockData.financial.banks.reduce((sum, row) => sum + row.balance, 0);
+        return {
+          company,
+          activePackage: "Standart",
+          pendingCollection,
+          bankBalance,
+          lastReportAt: "2026-05-02T11:40:00",
+          activities: [
+            "Finansal rapor görüntülendi",
+            "Firma bilgileri güncellendi",
+            "Premium Bundle talebi oluşturuldu"
+          ]
+        };
+      });
+    },
+    premiumPackages() {
+      return withFallback("/api/premium/packages", {}, () => window.MockData.premiumPackages);
+    },
+    requestPremium(payload) {
+      return withFallback("/api/premium/request", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        const company = window.MockData.companies.find((item) => item.id === user?.companyId) || window.MockData.companies[0];
+        const packageItem = window.MockData.premiumPackages.find((item) => item.id === payload.packageId) || window.MockData.premiumPackages[0];
+        window.MockData.premiumRequests.unshift({
+          id: `pr-${Date.now()}`,
+          user: user?.name || "Firma Yetkilisi",
+          company: company.name,
+          packageName: packageItem.name,
+          requestedAt: new Date().toISOString(),
+          status: "Bekliyor"
+        });
+        window.MockData.notifications.unshift({
+          id: `ntf-${Date.now()}`,
+          type: "premium",
+          title: "Premium talebiniz alındı",
+          message: `${packageItem.name} talebiniz admin onayına gönderildi.`,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+        log("premium.request", { type: "Premium", packageId: payload.packageId, company: company.name });
+        window.MockData.save();
+        window.dispatchEvent(new CustomEvent("notificationschange"));
+        return { ok: true };
+      });
+    },
+    notifications() {
+      return withFallback("/api/notifications", {}, () => window.MockData.notifications);
+    },
+    markNotificationsRead() {
+      return withFallback("/api/notifications/read-all", { method: "PUT" }, () => {
+        window.MockData.notifications.forEach((item) => { item.read = true; });
+        log("notification.read_all", { type: "CRUD" });
+        window.MockData.save();
+        window.dispatchEvent(new CustomEvent("notificationschange"));
+        return { ok: true };
+      });
+    },
     logs(params = {}) {
       return withFallback(`/api/admin/logs?${new URLSearchParams(params).toString()}`, {}, () => {
         let rows = [...window.MockData.logs];

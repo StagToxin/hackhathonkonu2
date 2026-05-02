@@ -1,2 +1,24 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kullanıcı | Bildirimler</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/user.css"></head><body data-requires-role="user"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><h1 class="text-2xl font-black text-text-dark">Bildirimler</h1><p class="mt-2 text-text-secondary">Admin onayı ve premium durum bildirimleri için kullanıcı ekranı hazır.</p><a class="btn btn-primary mt-6" href="dashboard.html">Panele dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kullanıcı | Bildirimler</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/user.css">
+</head>
+<body data-requires-role="user">
+  <div id="userPage"></div>
+  <template id="pageTemplate"><section class="grid gap-4" id="notificationList"></section></template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/user-layout.js"></script>
+  <script>
+    UserLayout.render({ active: "notifications.html", title: "Bildirimler", subtitle: "Premium, sözleşme ve sistem mesajları", actions: '<button class="btn btn-primary" id="markRead"><i data-lucide="check-check" class="h-5 w-5"></i> Tümünü okundu işaretle</button>', content: document.querySelector("#pageTemplate").innerHTML });
+    function icon(type){return type==="premium"?"gem":type==="contract"?"file-clock":"bell";}
+    async function load(){const rows=await Api.notifications();const list=document.querySelector("#notificationList");if(!rows.length){list.innerHTML='<div class="empty-state"><h3>Henüz bildirim yok</h3><p>Premium talepleri ve sistem mesajları burada görünür.</p></div>';return;}list.innerHTML=rows.map(n=>`<article class="notification-item ${n.read?"":"is-unread"}"><div class="notification-icon"><i data-lucide="${icon(n.type)}"></i></div><div><h2 class="font-black text-text-dark">${n.title}</h2><p class="mt-1 text-sm font-medium text-text-secondary">${n.message}</p><p class="mt-2 text-xs font-black text-primary-dark">${Utils.formatDate(n.createdAt)}</p></div><span class="badge ${n.read?"badge-info":"badge-success"}">${n.read?"Okundu":"Yeni"}</span></article>`).join("");lucide.createIcons();}
+    document.querySelector("#markRead").addEventListener("click",async()=>{await Api.markNotificationsRead();Toast.show("Tüm bildirimler okundu işaretlendi.",{type:"success"});load();});
+    load();
+  </script>
+</body>
+</html>

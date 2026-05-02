@@ -8,6 +8,8 @@
   <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../css/main.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -46,8 +48,12 @@
       <header class="admin-header">
         <div><h1 class="text-2xl font-black text-text-dark">Firmalar</h1><p class="text-sm font-medium text-text-secondary">CRUD, filtreleme ve dışa aktarım</p></div>
         <div class="flex items-center gap-2">
+          <button class="btn btn-secondary" id="mapToggle" type="button"><i data-lucide="map" class="h-5 w-5"></i> Harita Görünümü</button>
           <button class="btn btn-secondary" id="exportBtn"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i> Excel</button>
           <button class="btn btn-primary" id="openCompanyModal"><i data-lucide="plus" class="h-5 w-5"></i> Yeni Firma Ekle</button>
+          <div class="relative"><button class="btn btn-secondary icon-btn relative" data-notification-button title="Bildirimler"><i data-lucide="bell"></i><span class="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs font-black text-white" data-notification-count>0</span></button></div>
+          <button class="btn btn-secondary" id="langToggle" type="button"><span data-lang-toggle>TR</span></button>
+          <button class="btn btn-secondary icon-btn" data-theme-toggle title="Tema"><i data-lucide="moon"></i></button>
         </div>
       </header>
       <main class="admin-content">
@@ -67,6 +73,13 @@
             <span id="paginationInfo">0 kayıt</span>
             <div class="flex gap-2"><button class="btn btn-secondary" disabled>Önceki</button><button class="btn btn-secondary" disabled>Sonraki</button></div>
           </div>
+        </section>
+        <section class="surface mt-5 hidden p-5" id="mapPanel">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div><h2 class="admin-section-title">Firma Lokasyonları</h2><p class="text-sm font-medium text-text-secondary">Sabit demo koordinatlarıyla Leaflet harita görünümü</p></div>
+            <span class="badge badge-info">Mock geocoding</span>
+          </div>
+          <div class="leaflet-map" id="companiesMap"></div>
         </section>
       </main>
     </div>
@@ -98,8 +111,12 @@
   <script src="../js/auth.js"></script>
   <script src="../js/router.js"></script>
   <script src="../js/export.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/theme-toggle.js"></script>
   <script>
     let currentRows = [];
+    let companiesMap;
     function badgeFor(type) {
       return type === "Sistem" ? "badge-info" : type === "Analiz" ? "badge-success" : type === "Rapor" ? "badge-warning" : "badge-danger";
     }
@@ -109,7 +126,7 @@
       if (!rows.length) {
         wrap.innerHTML = `<div class="empty-state"><div class="grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-primary-dark"><i data-lucide="building-2" class="h-8 w-8"></i></div><h3>Henüz firma eklenmemiş</h3><p>Portföyünüzü yönetmek için ilk firmayı ekleyin.</p><button class="btn btn-primary" onclick="document.querySelector('#companyModal').classList.add('is-open')">Firma ekle</button></div>`;
       } else {
-        wrap.innerHTML = `<table class="data-table"><thead><tr><th>Şirket adı</th><th>Vergi No</th><th>Sözleşme Türü</th><th>Bitiş</th><th>Yıllık Ciro</th><th>Finansal Skor</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((c) => `<tr><td class="font-black text-text-dark">${c.name}</td><td>${c.taxNo}</td><td><span class="badge ${badgeFor(c.contractType)}">${c.contractType}</span></td><td>${Utils.formatDate(c.contractEnd)}</td><td>${Utils.formatCurrency(c.actualTurnover)}</td><td><span class="font-black text-primary-dark">${c.score || 68}/100</span></td><td><span class="badge badge-success">${c.status || "Aktif"}</span></td><td><div class="flex gap-2"><a class="btn btn-secondary icon-btn" title="Görüntüle" href="company-detail.html?id=${c.id}"><i data-lucide="eye"></i></a><button class="btn btn-secondary icon-btn" title="Düzenle"><i data-lucide="pencil"></i></button><button class="btn btn-danger icon-btn" title="Sil" data-delete="${c.id}"><i data-lucide="trash-2"></i></button></div></td></tr>`).join("")}</tbody></table>`;
+        wrap.innerHTML = `<table class="data-table"><thead><tr><th>Şirket adı</th><th>Vergi No</th><th>Sözleşme Türü</th><th>Bitiş</th><th>Yıllık Ciro</th><th>Finansal Sağlık</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((c) => { const score = Utils.healthScore(c); return `<tr><td class="font-black text-text-dark">${c.name}</td><td>${c.taxNo}</td><td><span class="badge ${badgeFor(c.contractType)}">${c.contractType}</span></td><td>${Utils.formatDate(c.contractEnd)}</td><td>${Utils.formatCurrency(c.actualTurnover)}</td><td><span class="health-score ${Utils.healthClass(score)}">${score}/100</span></td><td><span class="badge badge-success">${c.status || "Aktif"}</span></td><td><div class="flex gap-2"><a class="btn btn-secondary icon-btn" title="Görüntüle" href="company-detail.html?id=${c.id}"><i data-lucide="eye"></i></a><button class="btn btn-secondary icon-btn" title="Düzenle"><i data-lucide="pencil"></i></button><button class="btn btn-danger icon-btn" title="Sil" data-delete="${c.id}"><i data-lucide="trash-2"></i></button></div></td></tr>`; }).join("")}</tbody></table>`;
       }
       lucide.createIcons();
       document.querySelectorAll("[data-delete]").forEach((btn) => btn.addEventListener("click", async () => {
@@ -123,6 +140,19 @@
       const data = await Api.companies(Object.fromEntries(new FormData(form).entries()));
       currentRows = data.rows;
       render(currentRows);
+      renderMap(currentRows);
+    }
+    function renderMap(rows) {
+      if (!window.L || document.querySelector("#mapPanel").classList.contains("hidden")) return;
+      if (!companiesMap) {
+        companiesMap = L.map("companiesMap").setView([39.7, 32.9], 5);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(companiesMap);
+      }
+      companiesMap.eachLayer((layer) => { if (layer instanceof L.Marker) companiesMap.removeLayer(layer); });
+      rows.filter((company) => company.lat && company.lng).forEach((company) => {
+        L.marker([company.lat, company.lng]).addTo(companiesMap).bindPopup(`<strong>${company.name}</strong><br>${company.address || ""}`);
+      });
+      window.setTimeout(() => companiesMap.invalidateSize(), 120);
     }
     document.querySelector("#filterForm").addEventListener("input", Utils.debounce(loadRows, 70));
     document.querySelector("#filterForm").addEventListener("change", loadRows);
@@ -130,6 +160,11 @@
     document.querySelector("#closeCompanyModal").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
     document.querySelector("#cancelNewCompany").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
     document.querySelector("#exportBtn").addEventListener("click", () => Export.excel("firmalar.xlsx", currentRows));
+    document.querySelector("#mapToggle").addEventListener("click", () => {
+      document.querySelector("#mapPanel").classList.toggle("hidden");
+      renderMap(currentRows);
+    });
+    document.querySelector("#langToggle").addEventListener("click", () => I18n.toggle());
     Validation.bind("#newCompanyForm");
     document.querySelector("#newCompanyForm").addEventListener("submit", async (event) => {
       event.preventDefault();

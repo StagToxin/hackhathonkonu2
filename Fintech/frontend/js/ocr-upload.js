@@ -1,4 +1,10 @@
 (function () {
+  function validateFile(file) {
+    if (!file) return false;
+    const allowed = ["application/pdf", "image/jpeg", "image/png"];
+    return allowed.includes(file.type) || /\.(pdf|jpe?g|png)$/i.test(file.name || "");
+  }
+
   function markAi(input) {
     const field = input.closest("[data-field]");
     if (!field || field.querySelector(".ai-mark")) return;
@@ -24,6 +30,34 @@
     return count;
   }
 
+  function setFormLoading(form, isLoading) {
+    form.querySelectorAll("input, select, textarea, button").forEach((node) => {
+      if (node.type !== "file") node.classList.toggle("opacity-60", isLoading);
+    });
+  }
+
+  async function handleDocumentUpload(file, formId) {
+    const form = typeof formId === "string" ? document.querySelector(formId) : formId;
+    if (!form) return null;
+    if (!validateFile(file)) {
+      window.Toast.show("Geçersiz dosya. PDF, JPG veya PNG yükleyin.", { type: "error" });
+      return null;
+    }
+    setFormLoading(form, true);
+    window.Toast.show("Belge analiz ediliyor...", { type: "info" });
+    try {
+      const result = await window.Api.parseOcr(file);
+      const count = fillForm(form, result.fields);
+      window.Toast.show(`${count} alan AI ile dolduruldu. Kontrol edin.`, { type: "success" });
+      return result;
+    } catch (error) {
+      window.Toast.show("Belge işlenemedi. Net bir görsel yüklemeyi deneyin.", { type: "error" });
+      return null;
+    } finally {
+      setFormLoading(form, false);
+    }
+  }
+
   function setup(options) {
     const zone = document.querySelector(options.zone);
     const input = document.querySelector(options.input);
@@ -33,11 +67,13 @@
 
     async function process(file) {
       if (!file) return;
+      if (!validateFile(file)) {
+        window.Toast.show("Geçersiz dosya. PDF, JPG veya PNG yükleyin.", { type: "error" });
+        return;
+      }
       status?.classList.remove("hidden");
       try {
-        const result = await window.Api.parseOcr(file);
-        const count = fillForm(form, result.fields);
-        window.Toast.show(`${count} alan AI ile dolduruldu. Lütfen kontrol edin.`, { type: "success" });
+        await handleDocumentUpload(file, form);
       } catch (error) {
         window.Toast.show("Belge analiz edilemedi. Manuel giriş yapabilirsiniz.", { type: "error" });
       } finally {
@@ -59,5 +95,5 @@
     input.addEventListener("change", () => process(input.files[0]));
   }
 
-  window.OcrUpload = { setup };
+  window.OcrUpload = { setup, handleDocumentUpload, validateFile, fillForm };
 })();
