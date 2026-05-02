@@ -2,6 +2,7 @@
   function apply(theme) {
     document.body.classList.toggle("dark", theme === "dark");
     window.localStorage.setItem("theme", theme);
+    window.dispatchEvent(new CustomEvent("themechange", { detail: { theme } }));
   }
 
   document.addEventListener("DOMContentLoaded", () => {

@@ -1,2 +1,54 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin | Finansal Durum</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"></head><body data-requires-role="admin"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><img src="../assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-12"><h1 class="mt-6 text-2xl font-black text-text-dark">Firmaların Finansal Durumu</h1><p class="mt-2 text-text-secondary">Tahsilat, nakit akışı, bankalar ve proje takip ekranı ikinci kısımda genişletilecek.</p><a class="btn btn-primary mt-6" href="dashboard.html">Dashboard'a dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Finansal Durum</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div id="adminPage"></div>
+  <template id="pageTemplate">
+    <section id="kpiGrid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4"></section>
+    <section class="mt-5 grid gap-5 xl:grid-cols-2">
+      <article class="surface p-5"><h2 class="admin-section-title mb-4">Bekleyen Tahsilat</h2><div class="table-wrap"><table class="data-table" id="pendingTable"></table></div></article>
+      <article class="surface p-5"><div class="mb-4 flex items-end justify-between gap-3"><h2 class="admin-section-title">Yapılan Tahsilat</h2><input class="input max-w-[190px]" type="month" id="paidMonth"></div><div class="table-wrap"><table class="data-table" id="paidTable"></table></div></article>
+      <article class="surface p-5"><h2 class="admin-section-title mb-4">Nakit Akış Tablosu</h2><div class="h-80"><canvas id="cashLine"></canvas></div></article>
+      <article class="surface p-5"><h2 class="admin-section-title mb-4">Borç / Alacak</h2><div class="grid gap-4 md:grid-cols-[220px_1fr]"><div class="h-56"><canvas id="debtDonut"></canvas></div><div class="table-wrap"><table class="data-table" id="maturityTable"></table></div></div></article>
+      <article class="surface p-5 xl:col-span-2"><h2 class="admin-section-title mb-4">Bankalar</h2><div class="table-wrap"><table class="data-table" id="banksTable"></table></div></article>
+      <article class="surface p-5"><h2 class="admin-section-title mb-4">Devam Eden / Biten İşler</h2><div class="grid gap-4 md:grid-cols-2"><div class="kanban-col"><h3 class="mb-3 font-black text-primary-dark">Devam Eden</h3><div id="activeProjects" class="grid gap-3"></div></div><div class="kanban-col"><h3 class="mb-3 font-black text-primary-dark">Biten</h3><div id="doneProjects" class="grid gap-3"></div></div></div></article>
+      <article class="surface p-5"><h2 class="admin-section-title mb-4">Mali Veriler</h2><div id="summaryGrid" class="grid gap-3 sm:grid-cols-2"></div></article>
+    </section>
+  </template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/charts.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
+  <script>
+    AdminLayout.render({ active: "financial-status.html", title: "Firmaların Finansal Durumu", subtitle: "Tahsilat, nakit akışı, banka ve proje özeti", content: document.querySelector("#pageTemplate").innerHTML });
+    function table(id, headers, rows, cells) { document.querySelector(id).innerHTML = `<thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr>${cells(row).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody>`; }
+    function spark(values) { const max=Math.max(...values); const pts=values.map((v,i)=>`${i*22},${34-(v/max)*28}`).join(" "); return `<svg class="mini-spark" viewBox="0 0 120 36"><polyline points="${pts}" fill="none" stroke="#2DBE8E" stroke-width="3" stroke-linecap="round"/></svg>`; }
+    Api.financialStatus("cmp-1").then((data) => {
+      const pending = data.pendingCollections.reduce((s,r)=>s+r.amount,0), paid = data.paidCollections.reduce((s,r)=>s+r.amount,0);
+      const netCash = (data.cashflow.inflow.at(-1) - data.cashflow.outflow.at(-1)) * 1000000;
+      const ratio = (data.summary.totalDebt / data.summary.totalReceivable).toFixed(2);
+      const kpis = [["Toplam Bekleyen Tahsilat", Utils.formatCurrency(pending), "warning", "wallet"], ["Bu Ay Yapılan Tahsilat", Utils.formatCurrency(paid), "success", "circle-check"], ["Net Nakit Akışı", Utils.formatCurrency(netCash), "info", "activity"], ["Borç/Alacak Oranı", ratio, "danger", "scale"]];
+      document.querySelector("#kpiGrid").innerHTML = kpis.map(([t,v,b,i])=>`<article class="surface kpi-card"><div class="relative z-10 flex justify-between gap-3"><div><p class="text-sm font-black text-text-secondary">${t}</p><p class="mt-3 text-2xl font-black text-text-dark">${v}</p></div><div class="kpi-icon"><i data-lucide="${i}"></i></div></div><span class="badge badge-${b} mt-4">Canlı demo</span></article>`).join("");
+      table("#pendingTable", ["Müşteri","Fatura","Tutar","Vade","Durum"], data.pendingCollections, r => [r.customer, r.invoiceNo, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge ${r.status==="Riskli"?"badge-danger":"badge-warning"}">${r.status}</span>`]);
+      table("#paidTable", ["Tarih","Müşteri","Tutar","Durum"], data.paidCollections, r => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), `<span class="badge badge-success">${r.status}</span>`]);
+      table("#maturityTable", ["Vade","Borç","Alacak"], data.maturity, r => [r.label, Utils.formatCurrency(r.debt), Utils.formatCurrency(r.receivable)]);
+      table("#banksTable", ["Banka","Bakiye","Kredi Limiti","Kullanım","Trend"], data.banks, b => [b.name, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage), spark(b.spark)]);
+      Charts.line(document.querySelector("#cashLine"), data.cashflow.labels, data.cashflow.inflow.map((v,i)=>(v-data.cashflow.outflow[i])*1000000), "Net Nakit");
+      Charts.doughnut(document.querySelector("#debtDonut"), ["Toplam Borç", "Toplam Alacak"], [data.summary.totalDebt, data.summary.totalReceivable]);
+      document.querySelector("#activeProjects").innerHTML = data.projects.filter(p=>p.status==="Devam").map(p=>`<div class="rounded-xl bg-bg-main p-3"><p class="font-black">${p.name}</p><p class="text-sm text-text-secondary">${Utils.formatCurrency(p.amount)} · ${Utils.formatDate(p.end)}</p></div>`).join("");
+      document.querySelector("#doneProjects").innerHTML = data.projects.filter(p=>p.status==="Bitti").map(p=>`<div class="rounded-xl bg-bg-main p-3"><p class="font-black">${p.name}</p><p class="text-sm text-text-secondary">${Utils.formatCurrency(p.amount)} · tamamlandı</p></div>`).join("");
+      document.querySelector("#summaryGrid").innerHTML = Object.entries(data.summary).slice(0,8).map(([k,v])=>`<div class="rounded-xl bg-bg-main p-3"><p class="text-xs font-black uppercase text-text-secondary">${k}</p><p class="mt-1 font-black text-text-dark">${Utils.formatCurrency(v)}</p></div>`).join("");
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

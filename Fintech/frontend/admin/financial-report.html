@@ -1,2 +1,191 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin | Finansal Rapor</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css"></head><body data-requires-role="admin"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><img src="../assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-12"><h1 class="mt-6 text-2xl font-black text-text-dark">Finansal Rapor</h1><p class="mt-2 text-text-secondary">AI analiz, mali veri girişi ve markdown rapor görünümü sonraki teslimde eklenecek.</p><a class="btn btn-primary mt-6" href="dashboard.html">Dashboard'a dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Finansal Rapor</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div id="adminPage"></div>
 
+  <template id="pageTemplate">
+    <section class="grid gap-5 xl:grid-cols-[1.15fr_0.85fr]">
+      <form id="financialForm" class="grid gap-4">
+        <div class="surface p-4">
+          <div class="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+            <div data-field>
+              <label class="field-label" for="companyId">Firma</label>
+              <select class="select" id="companyId" name="companyId"></select>
+            </div>
+            <label class="flex min-h-[44px] items-center gap-3 rounded-xl bg-bg-main px-4 font-black text-text-dark">
+              <input id="consolidated" type="checkbox" class="h-4 w-4">
+              Konsolide Görünüme Geç
+            </label>
+          </div>
+        </div>
+
+        <details class="accordion" open>
+          <summary>Mali Veriler</summary>
+          <div class="accordion-body grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div data-field><label class="field-label">Aktif toplamı</label><input class="input" name="assets" type="number"></div>
+            <div data-field><label class="field-label">Pasif toplamı</label><input class="input" name="liabilities" type="number"></div>
+            <div data-field><label class="field-label">Hasılat</label><input class="input" name="revenue" type="number"></div>
+            <div data-field><label class="field-label">Brüt kâr</label><input class="input" name="grossProfit" type="number"></div>
+            <div data-field><label class="field-label">Net kâr</label><input class="input" name="netProfit" type="number"></div>
+            <div data-field><label class="field-label">Özkaynak</label><input class="input" name="equity" type="number"></div>
+            <div data-field><label class="field-label">Yabancı kaynak</label><input class="input" name="debt" type="number"></div>
+          </div>
+        </details>
+
+        <details class="accordion" open>
+          <summary>Faaliyet Alanı ve Tarihçe</summary>
+          <div class="accordion-body" data-field>
+            <textarea class="textarea" name="history">Şirket, ihracat odaklı büyüyen bir müşteri portföyüne ve dönemsel üretim kapasitesi yatırımlarına sahiptir.</textarea>
+          </div>
+        </details>
+
+        <details class="accordion">
+          <summary>Alış-Satış Koşulları</summary>
+          <div class="accordion-body grid gap-4 md:grid-cols-3">
+            <div data-field><label class="field-label">Ortalama vade</label><input class="input" name="term" value="45 gün"></div>
+            <div data-field><label class="field-label">Ödeme koşulu</label><input class="input" name="paymentTerm" value="30% peşin, 70% teslim sonrası"></div>
+            <div data-field><label class="field-label">Ticari kredi limiti</label><input class="input" name="tradeLimit" type="number" value="8500000"></div>
+          </div>
+        </details>
+
+        <details class="accordion" open>
+          <summary>Bankalar ve Banka Verileri</summary>
+          <div class="accordion-body table-wrap">
+            <table class="data-table" id="banksTable"></table>
+          </div>
+        </details>
+
+        <details class="accordion">
+          <summary>Bekleyen ve Yapılan Tahsilat</summary>
+          <div class="accordion-body grid gap-4 xl:grid-cols-2">
+            <div><h3 class="mb-3 font-black text-text-dark">Bekleyen Tahsilat</h3><div class="table-wrap"><table class="data-table" id="pendingCollections"></table></div></div>
+            <div><h3 class="mb-3 font-black text-text-dark">Yapılan Tahsilat</h3><div class="table-wrap"><table class="data-table" id="paidCollections"></table></div></div>
+          </div>
+        </details>
+
+        <details class="accordion">
+          <summary>Nakit Akış Tablosu</summary>
+          <div class="accordion-body"><div class="h-72"><canvas id="cashflowChart"></canvas></div></div>
+        </details>
+
+        <details class="accordion">
+          <summary>Borç / Alacak Özeti</summary>
+          <div class="accordion-body grid gap-4 md:grid-cols-2">
+            <div data-field><label class="field-label">Toplam borç</label><input class="input" name="totalDebt" type="number"></div>
+            <div data-field><label class="field-label">Toplam alacak</label><input class="input" name="totalReceivable" type="number"></div>
+            <div class="md:col-span-2 table-wrap"><table class="data-table" id="maturityTable"></table></div>
+          </div>
+        </details>
+
+        <details class="accordion" open>
+          <summary>Devam Eden ve Biten İşler</summary>
+          <div class="accordion-body table-wrap"><table class="data-table" id="projectTable"></table></div>
+        </details>
+      </form>
+
+      <aside class="analysis-panel">
+        <section class="surface p-5">
+          <div class="rounded-2xl bg-bg-main p-4">
+            <p class="text-sm font-black text-primary-dark">AI Analiz Paneli</p>
+            <h2 class="mt-2 text-xl font-black text-text-dark">Belge yükle veya verileri girip analizi başlat</h2>
+            <p class="mt-2 text-sm font-medium text-text-secondary">OCR ile doldurulan ve manuel girilen tüm veriler analiz isteğine dahil edilir.</p>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-2">
+            <button class="btn btn-secondary w-full" id="mockUpload" type="button"><i data-lucide="upload-cloud" class="h-5 w-5"></i> Belge Yükle</button>
+            <button class="btn btn-primary w-full" id="analyzeBtn" type="button"><i data-lucide="sparkles" class="h-5 w-5"></i> AI Finansal Analiz Üret</button>
+          </div>
+          <div id="analysisLoading" class="mt-5 hidden">
+            <div class="skeleton mb-3 h-7"></div>
+            <div class="skeleton mb-3 h-20"></div>
+            <div class="skeleton h-32"></div>
+            <p class="mt-4 flex items-center gap-3 font-black text-primary-dark"><span class="spinner"></span> AI raporunuzu hazırlıyor...</p>
+          </div>
+          <div id="analysisResult" class="markdown-report mt-5"></div>
+          <div class="mt-5 flex flex-wrap gap-2">
+            <button class="btn btn-secondary" id="pdfBtn" type="button"><i data-lucide="file-down" class="h-5 w-5"></i> PDF Olarak İndir</button>
+            <button class="btn btn-secondary" id="shareBtn" type="button"><i data-lucide="share-2" class="h-5 w-5"></i> Paylaş</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </template>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/validation.js"></script>
+  <script src="../js/mock-data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/router.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/ai-analysis.js"></script>
+  <script src="../js/theme-toggle.js"></script>
+  <script src="../js/admin-layout.js"></script>
+  <script>
+    AdminLayout.render({
+      active: "financial-report.html",
+      title: "Finansal Rapor",
+      subtitle: "Kapsamlı veri girişi, OCR destekli düzenleme ve AI analiz",
+      actions: '<a class="btn btn-secondary" href="company-detail.html"><i data-lucide="building-2" class="h-5 w-5"></i> Firma Detay</a>',
+      content: document.querySelector("#pageTemplate").innerHTML
+    });
+
+    const companySelect = document.querySelector("#companyId");
+    companySelect.innerHTML = MockData.companies.map((company) => `<option value="${company.id}">${company.name}</option>`).join("");
+
+    function moneyInput(name, value) {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input) input.value = value;
+    }
+
+    function renderEditableTable(id, headers, rows, cells) {
+      document.querySelector(id).innerHTML = `<thead><tr>${headers.map((header) => `<th>${header}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${cells(row).map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>`;
+    }
+
+    function renderData(data) {
+      Object.entries(data.summary).forEach(([key, value]) => moneyInput(key, value));
+      renderEditableTable("#banksTable", ["Banka", "Hesap No", "Bakiye", "Kredi Limiti", "Kullanım"], data.banks, (b) => [b.name, b.accountNo, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage)]);
+      renderEditableTable("#pendingCollections", ["Tarih", "Müşteri", "Tutar", "Vade", "Durum"], data.pendingCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge ${r.status === "Riskli" ? "badge-danger" : "badge-warning"}">${r.status}</span>`]);
+      renderEditableTable("#paidCollections", ["Tarih", "Müşteri", "Tutar", "Vade", "Durum"], data.paidCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge badge-success">${r.status}</span>`]);
+      renderEditableTable("#maturityTable", ["Vade", "Borç", "Alacak"], data.maturity, (r) => [r.label, Utils.formatCurrency(r.debt), Utils.formatCurrency(r.receivable)]);
+      renderEditableTable("#projectTable", ["Proje", "Durum", "Tutar", "Başlangıç", "Bitiş"], data.projects, (p) => [p.name, `<span class="badge ${p.status === "Devam" ? "badge-info" : "badge-success"}">${p.status}</span>`, Utils.formatCurrency(p.amount), Utils.formatDate(p.start), Utils.formatDate(p.end)]);
+      Charts.line(document.querySelector("#cashflowChart"), data.cashflow.labels, data.cashflow.inflow.map((v, i) => (v - data.cashflow.outflow[i]) * 1000000), "Net Nakit Akışı");
+    }
+
+    Api.financialReport(companySelect.value).then(renderData);
+    document.querySelector("#mockUpload").addEventListener("click", () => Toast.show("Demo belge okundu; form alanları manuel düzenlenebilir şekilde hazır.", { type: "success" }));
+    document.querySelector("#analyzeBtn").addEventListener("click", async () => {
+      const loading = document.querySelector("#analysisLoading");
+      const result = document.querySelector("#analysisResult");
+      loading.classList.remove("hidden");
+      result.innerHTML = "";
+      const payload = { summary: Object.fromEntries(new FormData(document.querySelector("#financialForm")).entries()), consolidated: document.querySelector("#consolidated").checked };
+      const analysis = await Api.analyzeFinancial(companySelect.value, payload);
+      window.setTimeout(() => {
+        loading.classList.add("hidden");
+        AiAnalysis.renderMarkdown(result, analysis.markdown);
+      }, 1200);
+    });
+    document.querySelector("#pdfBtn").addEventListener("click", () => window.print());
+    document.querySelector("#shareBtn").addEventListener("click", async () => {
+      await navigator.clipboard?.writeText(window.location.href);
+      Toast.show("Paylaşım bağlantısı panoya kopyalandı.", { type: "success" });
+    });
+    lucide.createIcons();
+  </script>
+</body>
+</html>

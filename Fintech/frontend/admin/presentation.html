@@ -1,2 +1,66 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin | On Sunum</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"></head><body data-requires-role="admin"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><img src="../assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-12"><h1 class="mt-6 text-2xl font-black text-text-dark">On Sunum</h1><p class="mt-2 text-text-secondary">PPTX üretim akışı ve profesyonel slayt çıktısı sonraki bölümde bağlanacak.</p><a class="btn btn-primary mt-6" href="dashboard.html">Dashboard'a dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | On Sunum</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div id="adminPage"></div>
+  <template id="pageTemplate">
+    <section class="grid gap-5 xl:grid-cols-[360px_1fr]">
+      <aside class="surface p-5">
+        <div data-field><label class="field-label" for="companyId">Firma seçimi</label><select class="select" id="companyId"></select></div>
+        <div class="mt-5 rounded-2xl bg-bg-main p-4"><p class="text-sm font-black text-primary-dark">Marka uyumlu çıktı</p><p class="mt-2 text-sm font-medium text-text-secondary">Kapak, mali veriler, banka durumu, rasyolar, trendler ve AI özet slaytı oluşturulur.</p></div>
+        <button class="btn btn-primary mt-5 w-full" id="generateBtn"><i data-lucide="download" class="h-5 w-5"></i> Sunum Oluştur (.pptx)</button>
+        <button class="btn btn-secondary mt-3 w-full" id="previewBtn"><i data-lucide="play" class="h-5 w-5"></i> Önizleme</button>
+        <div id="pptxLoading" class="mt-4 hidden rounded-xl bg-emerald-50 p-4 font-black text-primary-dark"><span class="spinner mr-2 inline-block align-middle"></span> Sunum hazırlanıyor...</div>
+      </aside>
+      <main class="grid gap-5">
+        <section class="surface p-5"><h2 class="admin-section-title mb-4">Sunum Önizleme</h2><div id="slideGrid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div></section>
+        <section class="surface p-5"><h2 class="admin-section-title mb-4">Slayt İçerikleri</h2><ol id="slideList" class="grid gap-3"></ol></section>
+      </main>
+    </section>
+    <div class="modal-backdrop" id="previewModal"><section class="modal-panel"><div class="flex items-center justify-between border-b border-slate-100 p-5"><h2 class="text-xl font-black text-text-dark">Slayt Önizleme</h2><button class="btn btn-secondary icon-btn" id="closePreview"><i data-lucide="x"></i></button></div><div id="modalSlides" class="grid gap-4 p-5 md:grid-cols-2"></div></section></div>
+  </template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
+  <script>
+    AdminLayout.render({ active: "presentation.html", title: "On Sunum", subtitle: ".pptx üretimi ve marka uyumlu slayt önizleme", content: document.querySelector("#pageTemplate").innerHTML });
+    const slides = ["Kapak", "Temel mali veriler", "Bankadaki genel durum + kredi limitleri", "Finansal rasyolar", "Mali yapı özeti + trendler", "AI yorum / özet slayt"];
+    const companySelect = document.querySelector("#companyId");
+    companySelect.innerHTML = MockData.companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+    function renderSlides() {
+      const company = MockData.companies.find(c=>c.id===companySelect.value) || MockData.companies[0];
+      const html = slides.map((title, index)=>`<article class="slide-thumb"><strong>${index+1}. ${title}</strong><div class="mt-4"><p class="text-sm font-black text-text-dark">${index===0?company.name:title}</p><p class="mt-2 text-xs font-semibold text-text-secondary">Pro Sicht finansal analiz sunumu</p></div><span class="mt-4 h-1.5 rounded-full bg-primary"></span></article>`).join("");
+      document.querySelector("#slideGrid").innerHTML = html;
+      document.querySelector("#modalSlides").innerHTML = html;
+      document.querySelector("#slideList").innerHTML = slides.map((s,i)=>`<li class="rounded-xl bg-bg-main p-4 font-black text-text-dark">${i+1}. ${s}</li>`).join("");
+    }
+    renderSlides();
+    companySelect.addEventListener("change", renderSlides);
+    document.querySelector("#previewBtn").addEventListener("click", () => document.querySelector("#previewModal").classList.add("is-open"));
+    document.querySelector("#closePreview").addEventListener("click", () => document.querySelector("#previewModal").classList.remove("is-open"));
+    document.querySelector("#generateBtn").addEventListener("click", async () => {
+      const loading = document.querySelector("#pptxLoading");
+      loading.classList.remove("hidden");
+      const blob = await Api.generatePptx(companySelect.value);
+      window.setTimeout(() => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "pro-sicht-on-sunum.pptx";
+        link.click();
+        URL.revokeObjectURL(url);
+        loading.classList.add("hidden");
+        Toast.show("Sunum dosyası hazırlandı.", { type: "success" });
+      }, 1300);
+    });
+    lucide.createIcons();
+  </script>
+</body>
+</html>

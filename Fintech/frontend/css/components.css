@@ -179,3 +179,59 @@
   font-size: 0.75rem;
   font-weight: 900;
 }
+
+body.dark .toast {
+  border-color: rgba(185, 200, 204, 0.14);
+  background: rgba(19, 45, 54, 0.96);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+}
+
+body.dark .toast-close {
+  color: rgba(242, 251, 248, 0.72);
+}
+
+body.dark .empty-state {
+  border-color: rgba(185, 200, 204, 0.18);
+  background: linear-gradient(180deg, rgba(19, 45, 54, 0.88), rgba(10, 24, 30, 0.88));
+}
+
+body.dark .skeleton {
+  background: rgba(185, 200, 204, 0.12);
+}
+
+body.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+body.dark .modal-backdrop {
+  background: rgba(3, 9, 12, 0.72);
+}
+
+body.dark .modal-panel {
+  border: 1px solid rgba(185, 200, 204, 0.14);
+  background: linear-gradient(180deg, rgba(19, 45, 54, 0.98), rgba(10, 24, 30, 0.98));
+  box-shadow: 0 36px 100px rgba(0, 0, 0, 0.48);
+}
+
+body.dark .tab-button {
+  color: rgba(185, 200, 204, 0.70);
+}
+
+body.dark .tab-button.is-active {
+  color: #F2FBF8;
+}
+
+body.dark .drop-zone {
+  border-color: rgba(185, 200, 204, 0.18);
+  background: rgba(9, 22, 28, 0.72);
+}
+
+body.dark .drop-zone.is-dragover {
+  border-color: rgba(45, 190, 142, 0.72);
+  background: rgba(45, 190, 142, 0.10);
+}
+
+body.dark .ai-mark {
+  background: rgba(45, 190, 142, 0.18);
+  color: #72E6BF;
+}

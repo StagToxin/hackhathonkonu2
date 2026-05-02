@@ -43,11 +43,52 @@
     window.MockData.logs.unshift({
       id: `log-${Date.now()}`,
       action,
+      type: detail.type || inferLogType(action),
+      status: detail.status || "success",
       detail,
       user: user?.email || "anonymous",
       createdAt: new Date().toISOString()
     });
     if (window.MockData.save) window.MockData.save();
+  }
+
+  function inferLogType(action) {
+    if (action.startsWith("auth.")) return "Auth";
+    if (action.startsWith("ai.")) return "AI";
+    if (action.startsWith("ocr.") || action.includes("ocr")) return "OCR";
+    if (action.startsWith("premium.")) return "Premium";
+    if (action.startsWith("error.")) return "Hata";
+    return "CRUD";
+  }
+
+  function markdownAnalysis(companyId, payload = {}) {
+    const company = window.MockData.companies.find((item) => item.id === companyId) || window.MockData.companies[0];
+    const summary = payload.summary || window.MockData.financial.summary;
+    const debtToEquity = summary.equity ? (summary.debt / summary.equity).toFixed(2) : "1.31";
+    return `## Güçlü Yönler
+- Hasılat ve net kâr çizgisi pozitif; net kâr ${window.Utils ? window.Utils.formatCurrency(summary.netProfit) : summary.netProfit} seviyesinde.
+- Banka limitleri çeşitlendirilmiş; en az üç banka üzerinden likidite tamponu korunuyor.
+- ${company.name} için finansal skor sektör ortalamasının üzerinde.
+
+## Zayıf Yönler
+- Kısa vadeli tahsilat riski nakit akışını dönemsel olarak baskılıyor.
+- Kredi kullanım oranı bazı bankalarda konfor alanına yakın.
+
+## Riskler
+- Borç/özkaynak oranı ${debtToEquity}; 1.20 üzerindeki seviye yakından izlenmeli.
+- Vadesi yaklaşan alacaklarda gecikme olursa işletme sermayesi ihtiyacı artabilir.
+
+## Likidite Durumu
+Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayında net nakit akışı pozitif, ancak tahsilat vadelerindeki yoğunlaşma günlük likidite planını önemli hale getiriyor.
+
+## Borç/Özkaynak Dengesi
+Özkaynak tabanı güçlü olsa da yabancı kaynak finansmanı büyüme iştahını taşıyor. Yeni borçlanmada vade uzatma ve sabit maliyetli finansman tercih edilmeli.
+
+## Öneriler
+1. 30 gün üzeri alacaklar için erken uyarı listesi oluşturun.
+2. Kredi limitlerini banka bazında yeniden dengeleyin.
+3. Yüksek kârlı projelerde tahsilat şartlarını peşinat ağırlıklı güncelleyin.
+4. Konsolide grup görünümünde borç ve nakit pozisyonunu aylık izleyin.`;
   }
 
   const Api = {
@@ -204,6 +245,100 @@
             group: "Demo Grup"
           }
         };
+      });
+    },
+    financialReport(companyId) {
+      return withFallback(`/api/admin/financial-report/${companyId}`, {}, () => window.MockData.financial);
+    },
+    analyzeFinancial(companyId, payload = {}) {
+      return withFallback(`/api/ai/analyze/${companyId}`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }, () => {
+        log("ai.financial_analysis", { type: "AI", companyId, responseTimeMs: 4200 });
+        return { markdown: markdownAnalysis(companyId, payload), generatedAt: new Date().toISOString() };
+      });
+    },
+    financialStatus(companyId) {
+      return withFallback(`/api/admin/financial-status/${companyId}`, {}, () => window.MockData.financial);
+    },
+    investments(companyId) {
+      return withFallback(`/api/admin/investments/${companyId}`, {}, () => window.MockData.investments);
+    },
+    generatePptx(companyId) {
+      return withFallback(`/api/pptx/${companyId}`, {}, () => {
+        const company = window.MockData.companies.find((item) => item.id === companyId) || window.MockData.companies[0];
+        log("ai.pptx.generate", { type: "AI", companyId, responseTimeMs: 3100 });
+        const blob = new Blob([`Mock PPTX package for ${company.name}`], {
+          type: "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        });
+        return blob;
+      });
+    },
+    contracts() {
+      return withFallback("/api/admin/contracts", {}, () => window.MockData.contracts);
+    },
+    subscriptions() {
+      return withFallback("/api/admin/subscriptions", {}, () => window.MockData.subscriptions);
+    },
+    financialProcess(params = {}) {
+      return withFallback(`/api/admin/financial-process?${new URLSearchParams(params).toString()}`, {}, () => {
+        let rows = [...window.MockData.processPayments];
+        if (params.status) rows = rows.filter((row) => row.status === params.status);
+        if (params.company) rows = rows.filter((row) => row.company === params.company);
+        if (params.dateFrom) rows = rows.filter((row) => row.paidAt >= params.dateFrom);
+        if (params.dateTo) rows = rows.filter((row) => row.paidAt <= params.dateTo);
+        return rows;
+      });
+    },
+    premiumRequests() {
+      return withFallback("/api/admin/premium-requests", {}, () => window.MockData.premiumRequests);
+    },
+    approvePremium(id) {
+      return withFallback(`/api/admin/premium-requests/${id}/approve`, { method: "POST" }, () => {
+        const requestItem = window.MockData.premiumRequests.find((item) => item.id === id);
+        if (requestItem) requestItem.status = "Onaylandı";
+        log("premium.approve", { type: "Premium", id });
+        window.MockData.save();
+        return { ok: true };
+      });
+    },
+    rejectPremium(id, reason = "") {
+      return withFallback(`/api/admin/premium-requests/${id}/reject`, {
+        method: "POST",
+        body: JSON.stringify({ reason })
+      }, () => {
+        const requestItem = window.MockData.premiumRequests.find((item) => item.id === id);
+        if (requestItem) requestItem.status = "Reddedildi";
+        log("premium.reject", { type: "Premium", id, reason });
+        window.MockData.save();
+        return { ok: true };
+      });
+    },
+    groups() {
+      return withFallback("/api/admin/groups", {}, () => window.MockData.groups);
+    },
+    createGroup(payload) {
+      return withFallback("/api/admin/groups", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }, () => {
+        const group = { id: `grp-${Date.now()}`, turnover: 0, debt: 0, riskScore: 55, ...payload };
+        window.MockData.groups.unshift(group);
+        log("company.group_create", { type: "CRUD", group: group.name });
+        window.MockData.save();
+        return group;
+      });
+    },
+    logs(params = {}) {
+      return withFallback(`/api/admin/logs?${new URLSearchParams(params).toString()}`, {}, () => {
+        let rows = [...window.MockData.logs];
+        if (params.type) rows = rows.filter((row) => row.type === params.type);
+        if (params.user) rows = rows.filter((row) => String(row.user).toLocaleLowerCase("tr-TR").includes(params.user.toLocaleLowerCase("tr-TR")));
+        if (params.search) rows = rows.filter((row) => JSON.stringify(row).toLocaleLowerCase("tr-TR").includes(params.search.toLocaleLowerCase("tr-TR")));
+        if (params.dateFrom) rows = rows.filter((row) => row.createdAt.slice(0, 10) >= params.dateFrom);
+        if (params.dateTo) rows = rows.filter((row) => row.createdAt.slice(0, 10) <= params.dateTo);
+        return rows;
       });
     },
     log

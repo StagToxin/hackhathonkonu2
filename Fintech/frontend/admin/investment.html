@@ -1,2 +1,52 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin | Yatırım</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"></head><body data-requires-role="admin"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><img src="../assets/logo-full.png" alt="Pro Sicht" class="mx-auto h-12"><h1 class="mt-6 text-2xl font-black text-text-dark">Yatırım</h1><p class="mt-2 text-text-secondary">Portföy, planlanan yatırım ve risk skoru tasarımı sonraki teslim kapsamına hazırlandı.</p><a class="btn btn-primary mt-6" href="dashboard.html">Dashboard'a dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Yatırım</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin">
+  <div id="adminPage"></div>
+  <template id="pageTemplate">
+    <section class="terminal-panel p-5">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div><p class="muted text-sm font-black">PRO SICHT INVESTMENT DESK</p><h2 class="mt-2 text-3xl font-black">Portföy, risk ve finansal sağlık komuta ekranı</h2><p class="muted mt-2 max-w-3xl">Bloomberg terminal yoğunluğu, Pro Sicht renkleri ve demo için okunabilir karar kartlarıyla tasarlandı.</p></div>
+        <div class="grid grid-cols-2 gap-3 text-center"><div class="rounded-xl bg-white/10 p-4"><p class="muted text-xs font-black">Risk Skoru</p><p class="text-3xl font-black" id="riskValue">0</p></div><div class="rounded-xl bg-white/10 p-4"><p class="muted text-xs font-black">Sağlık Skoru</p><p class="text-3xl font-black text-primary" id="healthValue">0</p></div></div>
+      </div>
+    </section>
+    <section class="mt-5 grid gap-5 xl:grid-cols-[1fr_420px]">
+      <div class="grid gap-5">
+        <article class="surface p-5"><h2 class="admin-section-title mb-4">Aktif Yatırımlar</h2><div id="investmentCards" class="grid gap-4 md:grid-cols-2"></div></article>
+        <article class="surface p-5"><h2 class="admin-section-title mb-4">Planlanan Yatırımlar</h2><div class="table-wrap"><table class="data-table" id="plannedTable"></table></div><div class="mt-5 h-64"><canvas id="plannedChart"></canvas></div></article>
+      </div>
+      <aside class="grid gap-5">
+        <article class="surface p-5"><h2 class="admin-section-title mb-4">Portföy Dağılımı</h2><div class="h-64"><canvas id="sectorChart"></canvas></div></article>
+        <article class="surface p-5"><h2 class="admin-section-title mb-4">Coğrafi Dağılım</h2><div class="h-64"><canvas id="geoChart"></canvas></div></article>
+        <article class="surface p-5"><h2 class="admin-section-title mb-4">Risk Skoru</h2><div class="grid place-items-center"><div class="gauge"></div><p class="mt-4 text-center text-sm font-bold text-text-secondary" id="riskText"></p></div></article>
+      </aside>
+    </section>
+  </template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/charts.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
+  <script>
+    AdminLayout.render({ active: "investment.html", title: "Yatırım", subtitle: "Aktif portföy, planlanan yatırım ve risk skorları", content: document.querySelector("#pageTemplate").innerHTML });
+    function spark(values) { const max=Math.max(...values); return `<svg class="mini-spark" viewBox="0 0 120 36"><polyline points="${values.map((v,i)=>`${i*22},${34-(v/max)*28}`).join(" ")}" fill="none" stroke="#2DBE8E" stroke-width="3" stroke-linecap="round"/></svg>`; }
+    Api.investments("cmp-1").then((data) => {
+      document.querySelector("#riskValue").textContent = data.riskScore;
+      document.querySelector("#healthValue").textContent = data.healthScore;
+      document.querySelector("#riskText").textContent = data.riskScore < 70 ? "Orta risk: portföy çeşitliliği iyi, ancak kredi ve yatırım vadesi birlikte izlenmeli." : "Yüksek risk: yatırım iştahı azaltılmalı.";
+      document.querySelector("#investmentCards").innerHTML = data.active.map((item)=>`<div class="rounded-xl border border-slate-100 bg-bg-main p-4"><div class="flex items-start justify-between gap-3"><div><p class="font-black text-text-dark">${item.name}</p><p class="mt-1 text-sm text-text-secondary">${Utils.formatCurrency(item.amount)} yatırım</p></div><span class="badge ${item.returnRate>=10?"badge-success":"badge-warning"}">%${item.returnRate}</span></div><p class="mt-4 text-2xl font-black text-text-dark">${Utils.formatCurrency(item.marketValue)}</p>${spark(item.spark)}</div>`).join("");
+      document.querySelector("#plannedTable").innerHTML = `<thead><tr><th>Yatırım</th><th>Bütçe</th><th>Tahmini Getiri</th><th>Dönem</th></tr></thead><tbody>${data.planned.map(p=>`<tr><td class="font-black">${p.name}</td><td>${Utils.formatCurrency(p.budget)}</td><td><span class="badge badge-success">%${p.expectedReturn}</span></td><td>${p.quarter}</td></tr>`).join("")}</tbody>`;
+      Charts.doughnut(document.querySelector("#sectorChart"), data.sector.labels, data.sector.values);
+      Charts.bar(document.querySelector("#geoChart"), data.geography.labels, data.geography.values, "Pay");
+      Charts.bar(document.querySelector("#plannedChart"), data.planned.map(p=>p.name), data.planned.map(p=>p.expectedReturn), "Tahmini Getiri");
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
