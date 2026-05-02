@@ -28,7 +28,7 @@
             </div>
             <label class="flex min-h-[44px] items-center gap-3 rounded-xl bg-bg-main px-4 font-black text-text-dark">
               <input id="consolidated" type="checkbox" class="h-4 w-4">
-              Konsolide Görünüme Geç
+              Konsolide GÃ¶rÃ¼nÃ¼me GeÃ§
             </label>
           </div>
         </div>
@@ -36,28 +36,28 @@
         <details class="accordion" open>
           <summary>Mali Veriler</summary>
           <div class="accordion-body grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div data-field><label class="field-label">Aktif toplamı</label><input class="input" name="assets" type="number"></div>
-            <div data-field><label class="field-label">Pasif toplamı</label><input class="input" name="liabilities" type="number"></div>
-            <div data-field><label class="field-label">Hasılat</label><input class="input" name="revenue" type="number"></div>
-            <div data-field><label class="field-label">Brüt kâr</label><input class="input" name="grossProfit" type="number"></div>
-            <div data-field><label class="field-label">Net kâr</label><input class="input" name="netProfit" type="number"></div>
-            <div data-field><label class="field-label">Özkaynak</label><input class="input" name="equity" type="number"></div>
-            <div data-field><label class="field-label">Yabancı kaynak</label><input class="input" name="debt" type="number"></div>
+            <div data-field><label class="field-label">Aktif toplamÄ±</label><input class="input" name="assets" type="number"></div>
+            <div data-field><label class="field-label">Pasif toplamÄ±</label><input class="input" name="liabilities" type="number"></div>
+            <div data-field><label class="field-label">HasÄ±lat</label><input class="input" name="revenue" type="number"></div>
+            <div data-field><label class="field-label">BrÃ¼t kÃ¢r</label><input class="input" name="grossProfit" type="number"></div>
+            <div data-field><label class="field-label">Net kÃ¢r</label><input class="input" name="netProfit" type="number"></div>
+            <div data-field><label class="field-label">Ã–zkaynak</label><input class="input" name="equity" type="number"></div>
+            <div data-field><label class="field-label">YabancÄ± kaynak</label><input class="input" name="debt" type="number"></div>
           </div>
         </details>
 
         <details class="accordion" open>
-          <summary>Faaliyet Alanı ve Tarihçe</summary>
+          <summary>Faaliyet AlanÄ± ve TarihÃ§e</summary>
           <div class="accordion-body" data-field>
-            <textarea class="textarea" name="history">Şirket, ihracat odaklı büyüyen bir müşteri portföyüne ve dönemsel üretim kapasitesi yatırımlarına sahiptir.</textarea>
+            <textarea class="textarea" name="history">Åirket, ihracat odaklÄ± bÃ¼yÃ¼yen bir mÃ¼ÅŸteri portfÃ¶yÃ¼ne ve dÃ¶nemsel Ã¼retim kapasitesi yatÄ±rÄ±mlarÄ±na sahiptir.</textarea>
           </div>
         </details>
 
         <details class="accordion">
-          <summary>Alış-Satış Koşulları</summary>
+          <summary>AlÄ±ÅŸ-SatÄ±ÅŸ KoÅŸullarÄ±</summary>
           <div class="accordion-body grid gap-4 md:grid-cols-3">
-            <div data-field><label class="field-label">Ortalama vade</label><input class="input" name="term" value="45 gün"></div>
-            <div data-field><label class="field-label">Ödeme koşulu</label><input class="input" name="paymentTerm" value="30% peşin, 70% teslim sonrası"></div>
+            <div data-field><label class="field-label">Ortalama vade</label><input class="input" name="term" value="45 gÃ¼n"></div>
+            <div data-field><label class="field-label">Ã–deme koÅŸulu</label><input class="input" name="paymentTerm" value="30% peÅŸin, 70% teslim sonrasÄ±"></div>
             <div data-field><label class="field-label">Ticari kredi limiti</label><input class="input" name="tradeLimit" type="number" value="8500000"></div>
           </div>
         </details>
@@ -70,29 +70,29 @@
         </details>
 
         <details class="accordion">
-          <summary>Bekleyen ve Yapılan Tahsilat</summary>
+          <summary>Bekleyen ve YapÄ±lan Tahsilat</summary>
           <div class="accordion-body grid gap-4 xl:grid-cols-2">
             <div><h3 class="mb-3 font-black text-text-dark">Bekleyen Tahsilat</h3><div class="table-wrap"><table class="data-table" id="pendingCollections"></table></div></div>
-            <div><h3 class="mb-3 font-black text-text-dark">Yapılan Tahsilat</h3><div class="table-wrap"><table class="data-table" id="paidCollections"></table></div></div>
+            <div><h3 class="mb-3 font-black text-text-dark">YapÄ±lan Tahsilat</h3><div class="table-wrap"><table class="data-table" id="paidCollections"></table></div></div>
           </div>
         </details>
 
         <details class="accordion">
-          <summary>Nakit Akış Tablosu</summary>
+          <summary>Nakit AkÄ±ÅŸ Tablosu</summary>
           <div class="accordion-body"><div class="h-72"><canvas id="cashflowChart"></canvas></div></div>
         </details>
 
         <details class="accordion">
-          <summary>Borç / Alacak Özeti</summary>
+          <summary>BorÃ§ / Alacak Ã–zeti</summary>
           <div class="accordion-body grid gap-4 md:grid-cols-2">
-            <div data-field><label class="field-label">Toplam borç</label><input class="input" name="totalDebt" type="number"></div>
+            <div data-field><label class="field-label">Toplam borÃ§</label><input class="input" name="totalDebt" type="number"></div>
             <div data-field><label class="field-label">Toplam alacak</label><input class="input" name="totalReceivable" type="number"></div>
             <div class="md:col-span-2 table-wrap"><table class="data-table" id="maturityTable"></table></div>
           </div>
         </details>
 
         <details class="accordion" open>
-          <summary>Devam Eden ve Biten İşler</summary>
+          <summary>Devam Eden ve Biten Ä°ÅŸler</summary>
           <div class="accordion-body table-wrap"><table class="data-table" id="projectTable"></table></div>
         </details>
       </form>
@@ -101,23 +101,23 @@
         <section class="surface p-5">
           <div class="rounded-2xl bg-bg-main p-4">
             <p class="text-sm font-black text-primary-dark">AI Analiz Paneli</p>
-            <h2 class="mt-2 text-xl font-black text-text-dark">Belge yükle veya verileri girip analizi başlat</h2>
-            <p class="mt-2 text-sm font-medium text-text-secondary">OCR ile doldurulan ve manuel girilen tüm veriler analiz isteğine dahil edilir.</p>
+            <h2 class="mt-2 text-xl font-black text-text-dark">Belge yÃ¼kle veya verileri girip analizi baÅŸlat</h2>
+            <p class="mt-2 text-sm font-medium text-text-secondary">OCR ile doldurulan ve manuel girilen tÃ¼m veriler analiz isteÄŸine dahil edilir.</p>
           </div>
           <div class="mt-4 grid gap-3 sm:grid-cols-2">
-            <button class="btn btn-secondary w-full" id="mockUpload" type="button"><i data-lucide="upload-cloud" class="h-5 w-5"></i> Belge Yükle</button>
-            <button class="btn btn-primary w-full" id="analyzeBtn" type="button"><i data-lucide="sparkles" class="h-5 w-5"></i> AI Finansal Analiz Üret</button>
+            <button class="btn btn-secondary w-full" id="mockUpload" type="button"><i data-lucide="upload-cloud" class="h-5 w-5"></i> Belge YÃ¼kle</button><input id="financialReportFile" class="hidden" type="file" accept=".pdf,.jpg,.jpeg,.png">
+            <button class="btn btn-primary w-full" id="analyzeBtn" type="button"><i data-lucide="sparkles" class="h-5 w-5"></i> AI Finansal Analiz Ãœret</button>
           </div>
           <div id="analysisLoading" class="mt-5 hidden">
             <div class="skeleton mb-3 h-7"></div>
             <div class="skeleton mb-3 h-20"></div>
             <div class="skeleton h-32"></div>
-            <p class="mt-4 flex items-center gap-3 font-black text-primary-dark"><span class="spinner"></span> AI raporunuzu hazırlıyor...</p>
+            <p class="mt-4 flex items-center gap-3 font-black text-primary-dark"><span class="spinner"></span> AI raporunuzu hazÄ±rlÄ±yor...</p>
           </div>
           <div id="analysisResult" class="markdown-report mt-5"></div>
           <div class="mt-5 flex flex-wrap gap-2">
-            <button class="btn btn-secondary" id="pdfBtn" type="button"><i data-lucide="file-down" class="h-5 w-5"></i> PDF Olarak İndir</button>
-            <button class="btn btn-secondary" id="shareBtn" type="button"><i data-lucide="share-2" class="h-5 w-5"></i> Paylaş</button>
+            <button class="btn btn-secondary" id="pdfBtn" type="button"><i data-lucide="file-down" class="h-5 w-5"></i> PDF Olarak Ä°ndir</button>
+            <button class="btn btn-secondary" id="shareBtn" type="button"><i data-lucide="share-2" class="h-5 w-5"></i> PaylaÅŸ</button>
           </div>
         </section>
       </aside>
@@ -133,13 +133,14 @@
   <script src="../js/router.js"></script>
   <script src="../js/charts.js"></script>
   <script src="../js/ai-analysis.js"></script>
+  <script src="../js/ocr-upload.js"></script>
   <script src="../js/theme-toggle.js"></script>
   <script src="../js/admin-layout.js"></script>
   <script>
     AdminLayout.render({
       active: "financial-report.html",
       title: "Finansal Rapor",
-      subtitle: "Kapsamlı veri girişi, OCR destekli düzenleme ve AI analiz",
+      subtitle: "KapsamlÄ± veri giriÅŸi, OCR destekli dÃ¼zenleme ve AI analiz",
       actions: '<a class="btn btn-secondary" href="company-detail.html"><i data-lucide="building-2" class="h-5 w-5"></i> Firma Detay</a>',
       content: document.querySelector("#pageTemplate").innerHTML
     });
@@ -156,18 +157,92 @@
       document.querySelector(id).innerHTML = `<thead><tr>${headers.map((header) => `<th>${header}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${cells(row).map((cell) => `<td>${cell}</td>`).join("")}</tr>`).join("")}</tbody>`;
     }
 
+    function tableValues(table) {
+      const headers = Array.from(table.querySelectorAll("thead th")).slice(0, -1).map((th) => th.textContent.trim());
+      return Array.from(table.querySelectorAll("tbody tr")).map((tr) => {
+        const values = Array.from(tr.querySelectorAll("td")).slice(0, headers.length).map((td) => td.querySelector("input")?.value ?? td.textContent.trim());
+        return Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]));
+      });
+    }
+
+    function enhanceEditableTable(id, storageKey) {
+      const table = document.querySelector(id);
+      if (!table) return;
+      table.closest(".table-wrap")?.nextElementSibling?.matches?.("[data-editable-add]") && table.closest(".table-wrap").nextElementSibling.remove();
+      table.dataset.editable = "true";
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      if (saved?.length) {
+        const headers = Array.from(table.querySelectorAll("thead th")).map((th) => th.textContent.trim());
+        table.querySelector("tbody").innerHTML = saved.map((row) => `<tr>${headers.map((header) => `<td>${row[header] || ""}</td>`).join("")}</tr>`).join("");
+      }
+      const headerRow = table.querySelector("thead tr");
+      if (!headerRow.querySelector("[data-action-head]")) headerRow.insertAdjacentHTML("beforeend", `<th data-action-head>Aksiyon</th>`);
+      const save = () => localStorage.setItem(storageKey, JSON.stringify(tableValues(table)));
+      const makeRowEditable = (tr) => {
+        const dataCells = Array.from(tr.children).slice(0, -1);
+        dataCells.forEach((td) => {
+          if (td.querySelector("input")) return;
+          const text = td.textContent.trim();
+          td.innerHTML = `<input class="input min-w-[140px]" value="${text.replaceAll('"', "&quot;")}">`;
+          td.querySelector("input").addEventListener("input", save);
+        });
+        const actionCell = tr.lastElementChild?.matches("[data-action-cell]") ? tr.lastElementChild : document.createElement("td");
+        actionCell.dataset.actionCell = "";
+        actionCell.innerHTML = `<button class="btn btn-danger icon-btn" type="button" title="Sil"><i data-lucide="trash-2"></i></button>`;
+        if (!actionCell.parentElement) tr.appendChild(actionCell);
+        actionCell.querySelector("button").onclick = () => { tr.remove(); save(); };
+      };
+      table.querySelectorAll("tbody tr").forEach((tr) => {
+        tr.insertAdjacentHTML("beforeend", `<td data-action-cell></td>`);
+        makeRowEditable(tr);
+      });
+      const addButton = document.createElement("button");
+      addButton.className = "btn btn-secondary mt-3";
+      addButton.dataset.editableAdd = "";
+      addButton.type = "button";
+      addButton.innerHTML = `<i data-lucide="plus" class="h-4 w-4"></i> Satır Ekle`;
+      addButton.onclick = () => {
+        const colCount = table.querySelectorAll("thead th").length - 1;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `${Array.from({ length: colCount }, () => "<td></td>").join("")}<td data-action-cell></td>`;
+        table.querySelector("tbody").appendChild(tr);
+        makeRowEditable(tr);
+        save();
+        lucide.createIcons();
+      };
+      table.closest(".table-wrap")?.insertAdjacentElement("afterend", addButton);
+      save();
+    }
+
     function renderData(data) {
       Object.entries(data.summary).forEach(([key, value]) => moneyInput(key, value));
-      renderEditableTable("#banksTable", ["Banka", "Hesap No", "Bakiye", "Kredi Limiti", "Kullanım"], data.banks, (b) => [b.name, b.accountNo, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage)]);
-      renderEditableTable("#pendingCollections", ["Tarih", "Müşteri", "Tutar", "Vade", "Durum"], data.pendingCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge ${r.status === "Riskli" ? "badge-danger" : "badge-warning"}">${r.status}</span>`]);
-      renderEditableTable("#paidCollections", ["Tarih", "Müşteri", "Tutar", "Vade", "Durum"], data.paidCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge badge-success">${r.status}</span>`]);
-      renderEditableTable("#maturityTable", ["Vade", "Borç", "Alacak"], data.maturity, (r) => [r.label, Utils.formatCurrency(r.debt), Utils.formatCurrency(r.receivable)]);
-      renderEditableTable("#projectTable", ["Proje", "Durum", "Tutar", "Başlangıç", "Bitiş"], data.projects, (p) => [p.name, `<span class="badge ${p.status === "Devam" ? "badge-info" : "badge-success"}">${p.status}</span>`, Utils.formatCurrency(p.amount), Utils.formatDate(p.start), Utils.formatDate(p.end)]);
-      Charts.line(document.querySelector("#cashflowChart"), data.cashflow.labels, data.cashflow.inflow.map((v, i) => (v - data.cashflow.outflow[i]) * 1000000), "Net Nakit Akışı");
+      renderEditableTable("#banksTable", ["Banka", "Hesap No", "Bakiye", "Kredi Limiti", "KullanÄ±m"], data.banks, (b) => [b.name, b.accountNo, Utils.formatCurrency(b.balance), Utils.formatCurrency(b.creditLimit), Utils.formatCurrency(b.usage)]);
+      renderEditableTable("#pendingCollections", ["Tarih", "MÃ¼ÅŸteri", "Tutar", "Vade", "Durum"], data.pendingCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge ${r.status === "Riskli" ? "badge-danger" : "badge-warning"}">${r.status}</span>`]);
+      renderEditableTable("#paidCollections", ["Tarih", "MÃ¼ÅŸteri", "Tutar", "Vade", "Durum"], data.paidCollections, (r) => [Utils.formatDate(r.date), r.customer, Utils.formatCurrency(r.amount), Utils.formatDate(r.due), `<span class="badge badge-success">${r.status}</span>`]);
+      renderEditableTable("#maturityTable", ["Vade", "BorÃ§", "Alacak"], data.maturity, (r) => [r.label, Utils.formatCurrency(r.debt), Utils.formatCurrency(r.receivable)]);
+      renderEditableTable("#projectTable", ["Proje", "Durum", "Tutar", "BaÅŸlangÄ±Ã§", "BitiÅŸ"], data.projects, (p) => [p.name, `<span class="badge ${p.status === "Devam" ? "badge-info" : "badge-success"}">${p.status}</span>`, Utils.formatCurrency(p.amount), Utils.formatDate(p.start), Utils.formatDate(p.end)]);
+      Charts.line(document.querySelector("#cashflowChart"), data.cashflow.labels, data.cashflow.inflow.map((v, i) => (v - data.cashflow.outflow[i]) * 1000000), "Net Nakit AkÄ±ÅŸÄ±");
+      enhanceEditableTable("#banksTable", "financial-report-banks");
+      enhanceEditableTable("#pendingCollections", "financial-report-pending");
+      enhanceEditableTable("#paidCollections", "financial-report-paid");
+      enhanceEditableTable("#maturityTable", "financial-report-maturity");
+      enhanceEditableTable("#projectTable", "financial-report-projects");
+      lucide.createIcons();
     }
 
     Api.financialReport(companySelect.value).then(renderData);
-    document.querySelector("#mockUpload").addEventListener("click", () => Toast.show("Demo belge okundu; form alanları manuel düzenlenebilir şekilde hazır.", { type: "success" }));
+    const reportFile = document.querySelector("#financialReportFile");
+    document.querySelector("#mockUpload").addEventListener("click", () => reportFile.click());
+    reportFile.addEventListener("change", async () => {
+      const data = await OcrUpload.handleFinancialReportUpload(reportFile.files[0]);
+      if (!data) return;
+      renderData({ ...MockData.financial, ...data });
+      document.querySelector("[name='history']").value = data.history;
+      document.querySelector("[name='term']").value = data.term;
+      document.querySelector("[name='paymentTerm']").value = data.paymentTerm;
+      document.querySelector("[name='tradeLimit']").value = data.tradeLimit;
+      Toast.show("Finansal rapor alanları AI ile dolduruldu; tüm alanlar manuel düzenlenebilir.", { type: "success" });
+    });
     document.querySelector("#analyzeBtn").addEventListener("click", async () => {
       const loading = document.querySelector("#analysisLoading");
       const result = document.querySelector("#analysisResult");
@@ -183,9 +258,11 @@
     document.querySelector("#pdfBtn").addEventListener("click", () => window.print());
     document.querySelector("#shareBtn").addEventListener("click", async () => {
       await navigator.clipboard?.writeText(window.location.href);
-      Toast.show("Paylaşım bağlantısı panoya kopyalandı.", { type: "success" });
+      Toast.show("PaylaÅŸÄ±m baÄŸlantÄ±sÄ± panoya kopyalandÄ±.", { type: "success" });
     });
     lucide.createIcons();
   </script>
 </body>
 </html>
+
+

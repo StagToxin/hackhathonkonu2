@@ -1,1 +1,43 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Admin | Firmalarımız</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css"></head><body data-requires-role="admin"><div id="adminPage"></div><template id="pageTemplate"><section class="grid gap-5 md:grid-cols-3"><a class="surface p-5" href="contracts.html"><i data-lucide="file-signature" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Sözleşmeler</h2><p class="mt-2 text-sm text-text-secondary">Aktif sözleşme, yenileme ve bitiş takibi.</p></a><a class="surface p-5" href="subscriptions.html"><i data-lucide="receipt" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Abonelik</h2><p class="mt-2 text-sm text-text-secondary">Paket, faturalama ve gelir görünümü.</p></a><a class="surface p-5" href="financial-process.html"><i data-lucide="workflow" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Finansal Süreç</h2><p class="mt-2 text-sm text-text-secondary">Tahsilat, ödeme ve gecikme operasyonu.</p></a></section></template><script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script><script>AdminLayout.render({active:"our-companies.html",title:"Firmalarımız / Mali Yapımız",subtitle:"Danışmanlık firmasının ticari ve mali yönetim merkezi",content:document.querySelector("#pageTemplate").innerHTML});lucide.createIcons();</script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Firmalarımız</title><link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css">
+</head>
+<body data-requires-role="admin"><div id="adminPage"></div>
+<template id="pageTemplate">
+  <section class="grid gap-5 md:grid-cols-3">
+    <a class="surface p-5" href="contracts.html"><i data-lucide="file-signature" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Sözleşmeler</h2><p class="mt-2 text-sm text-text-secondary">Aktif sözleşme, yenileme ve bitiş takibi.</p></a>
+    <a class="surface p-5" href="subscriptions.html"><i data-lucide="receipt" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Abonelik</h2><p class="mt-2 text-sm text-text-secondary">Paket, faturalama ve gelir görünümü.</p></a>
+    <a class="surface p-5" href="financial-process.html"><i data-lucide="workflow" class="h-8 w-8 text-primary-dark"></i><h2 class="mt-4 text-xl font-black text-text-dark">Finansal Süreç</h2><p class="mt-2 text-sm text-text-secondary">Tahsilat, ödeme ve gecikme operasyonu.</p></a>
+  </section>
+  <section class="surface mt-5 p-5">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="admin-section-title">Danışmanlık Tahsilatları</h2>
+      <div class="flex gap-2"><button class="btn btn-primary" id="pendingTab" type="button">Bekleyen Tahsilat</button><button class="btn btn-secondary" id="completedTab" type="button">Yapılan Tahsilat</button></div>
+    </div>
+    <div class="table-wrap mt-4"><table class="data-table" id="collectionTable"></table></div>
+  </section>
+</template>
+<script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
+<script>
+  AdminLayout.render({active:"our-companies.html",title:"Firmalarımız / Mali Yapımız",subtitle:"Danışmanlık firmasının ticari ve mali yönetim merkezi",content:document.querySelector("#pageTemplate").innerHTML});
+  const pending = MockData.processPayments.filter((row) => row.status !== "Ödendi");
+  const completed = MockData.processPayments.filter((row) => row.status === "Ödendi");
+  function renderCollections(mode) {
+    document.querySelector("#pendingTab").className = `btn ${mode === "pending" ? "btn-primary" : "btn-secondary"}`;
+    document.querySelector("#completedTab").className = `btn ${mode === "completed" ? "btn-primary" : "btn-secondary"}`;
+    const rows = mode === "pending" ? pending : completed;
+    document.querySelector("#collectionTable").innerHTML = `<thead><tr><th>Müşteri Firma</th><th>Hizmet</th><th>Tutar</th><th>${mode === "pending" ? "Vade" : "Tahsilat Tarihi"}</th><th>Durum</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="font-black">${r.company}</td><td>${r.item}</td><td>${Utils.formatCurrency(r.amount)}</td><td>${Utils.formatDate(r.paidAt)}</td><td><span class="badge ${r.status === "Gecikti" ? "badge-danger" : r.status === "Ödendi" ? "badge-success" : "badge-warning"}">${r.status}</span></td></tr>`).join("")}</tbody>`;
+    lucide.createIcons();
+  }
+  document.querySelector("#pendingTab").onclick = () => renderCollections("pending");
+  document.querySelector("#completedTab").onclick = () => renderCollections("completed");
+  renderCollections("pending");
+  lucide.createIcons();
+</script>
+</body>
+</html>

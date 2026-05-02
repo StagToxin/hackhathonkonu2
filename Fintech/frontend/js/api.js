@@ -2,6 +2,10 @@
   const configuredApiBase = window.localStorage.getItem("apiBaseUrl");
   const API_BASE = configuredApiBase || "http://localhost:8001";
   const USE_MOCK_API = !configuredApiBase;
+  const DEBUG = false;
+  function devLog(...args) {
+    if (DEBUG) console.info(...args);
+  }
 
   function delay(value, ms = 220) {
     return new Promise((resolve) => window.setTimeout(() => resolve(value), ms));
@@ -33,7 +37,7 @@
     try {
       return await request(path, options);
     } catch (error) {
-      console.info("Mock API kullanılıyor:", path, error.message);
+      devLog("Mock API kullanılıyor:", path, error.message);
       return runFallback(fallback, 80);
     }
   }
@@ -91,6 +95,12 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
 4. Konsolide grup görünümünde borç ve nakit pozisyonunu aylık izleyin.`;
   }
 
+  function featuresForPackage(packageName = "") {
+    if (packageName.includes("Premium Bundle")) return ["all_premium", "ai_analysis", "expert_opinion", "presentation"];
+    if (packageName.includes("Uzman")) return ["expert_opinion"];
+    return ["ai_analysis"];
+  }
+
   const Api = {
     login(credentials) {
       return withFallback("/api/auth/login", {
@@ -102,7 +112,15 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
         log("auth.login", { email: found.email, role: found.role });
         return {
           token: `mock-token-${found.role}`,
-          user: { email: found.email, name: found.name, role: found.role, companyId: found.companyId }
+          user: {
+            id: found.id,
+            email: found.email,
+            name: found.name,
+            role: found.role,
+            companyId: found.companyId,
+            approvalStatus: found.approvalStatus,
+            unlockedFeatures: found.unlockedFeatures || []
+          }
         };
       });
     },
@@ -204,7 +222,11 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
     approveCompany(id) {
       return withFallback(`/api/admin/pending-companies/${id}/approve`, { method: "POST" }, () => {
         const item = window.MockData.pendingCompanies.find((company) => company.id === id);
-        if (item) item.status = "Onaylandı";
+        if (item) {
+          item.status = "Onaylandı";
+          const user = window.MockData.users.find((entry) => entry.email === item.email);
+          if (user) user.approvalStatus = "approved";
+        }
         log("company.approve", { id });
         window.MockData.save();
         return { ok: true };
@@ -242,7 +264,14 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
             contractStart: "2026-05-01",
             contractEnd: "2027-05-01",
             contractType: "Analiz",
-            group: "Demo Grup"
+            group: "Demo Grup",
+            branches: [
+              { city: "İstanbul", address: "Kadıköy Şube, Bağdat Cad. No:42" },
+              { city: "Ankara", address: "Çankaya Şube, Tunalı Hilmi Cad. No:78" }
+            ],
+            subsidiaries: [
+              { name: "ABC Tekstil Lojistik A.Ş.", taxId: "1234567890" }
+            ]
           }
         };
       });
@@ -297,7 +326,27 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
     approvePremium(id) {
       return withFallback(`/api/admin/premium-requests/${id}/approve`, { method: "POST" }, () => {
         const requestItem = window.MockData.premiumRequests.find((item) => item.id === id);
-        if (requestItem) requestItem.status = "Onaylandı";
+        if (requestItem) {
+          requestItem.status = "Onaylandı";
+          requestItem.approvedAt = new Date().toISOString();
+          featuresForPackage(requestItem.packageName).forEach((feature) => {
+            if (window.Auth?.unlockFeature && requestItem.userId) window.Auth.unlockFeature(requestItem.userId, feature);
+          });
+          const companyForRequest = window.MockData.companies.find((company) => company.id === requestItem.companyId || company.name === requestItem.company);
+          const targetUser = window.MockData.users.find((user) => user.id === requestItem.userId || user.companyId === requestItem.companyId || user.companyId === companyForRequest?.id);
+          if (targetUser && !requestItem.userId) {
+            requestItem.userId = targetUser.id;
+            featuresForPackage(requestItem.packageName).forEach((feature) => window.Auth?.unlockFeature?.(targetUser.id, feature));
+          }
+          if (targetUser && window.Notifications?.addNotification) {
+            window.Notifications.addNotification(targetUser.id, {
+              type: "premium_approved",
+              title: "Premium talebiniz onaylandı",
+              message: `${requestItem.packageName} paketi aktive edildi. Artık ilgili özelliklere erişebilirsiniz.`,
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
         log("premium.approve", { type: "Premium", id });
         window.MockData.save();
         return { ok: true };
@@ -330,9 +379,120 @@ Son 12 aylık nakit girişleri çıkışların üzerinde seyrediyor. Mayıs ayı
         return group;
       });
     },
+    myCompany() {
+      return withFallback("/api/companies/me", {}, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        if (user?.companyId === "pending-demo") {
+          return {
+            id: "pending-demo",
+            name: "Onay Bekleyen Demo Ltd.",
+            taxNo: "9988776655",
+            tradeRegistryNo: "IST-NEW-001",
+            contactName: user.name,
+            phone: "+90 555 000 00 00",
+            email: user.email,
+            address: "İstanbul",
+            approvalStatus: "Bekliyor",
+            packageName: "Standart"
+          };
+        }
+        const company = window.MockData.companies.find((item) => item.id === user?.companyId) || window.MockData.companies[0];
+        return { ...company, approvalStatus: "Onaylandı", packageName: "Standart" };
+      });
+    },
+    updateMyCompany(payload) {
+      return withFallback("/api/companies/me", {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      }, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        const index = window.MockData.companies.findIndex((item) => item.id === user?.companyId);
+        if (index >= 0) window.MockData.companies[index] = { ...window.MockData.companies[index], ...payload };
+        window.MockData.pendingCompanies.unshift({
+          id: `upd-${Date.now()}`,
+          name: payload.name,
+          contactName: payload.contactName,
+          email: payload.email,
+          taxNo: payload.taxNo,
+          createdAt: new Date().toISOString(),
+          status: "Güncelleme Bekliyor"
+        });
+        log("company.user_update_request", { type: "CRUD", company: payload.name });
+        window.MockData.save();
+        return { ok: true, approvalStatus: "Bekliyor" };
+      });
+    },
+    userDashboard() {
+      return withFallback("/api/user/dashboard", {}, () => {
+        const company = window.MockData.companies[0];
+        const pendingCollection = window.MockData.financial.pendingCollections.reduce((sum, row) => sum + row.amount, 0);
+        const bankBalance = window.MockData.financial.banks.reduce((sum, row) => sum + row.balance, 0);
+        return {
+          company,
+          activePackage: "Standart",
+          pendingCollection,
+          bankBalance,
+          lastReportAt: "2026-05-02T11:40:00",
+          activities: [
+            "Finansal rapor görüntülendi",
+            "Firma bilgileri güncellendi",
+            "Premium Bundle talebi oluşturuldu"
+          ]
+        };
+      });
+    },
+    premiumPackages() {
+      return withFallback("/api/premium/packages", {}, () => window.MockData.premiumPackages);
+    },
+    requestPremium(payload) {
+      return withFallback("/api/premium/request", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }, () => {
+        const user = JSON.parse(window.localStorage.getItem("authUser") || "null");
+        const company = window.MockData.companies.find((item) => item.id === user?.companyId) || window.MockData.companies[0];
+        const packageItem = window.MockData.premiumPackages.find((item) => item.id === payload.packageId) || window.MockData.premiumPackages[0];
+        window.MockData.premiumRequests.unshift({
+          id: `pr-${Date.now()}`,
+          userId: user?.id,
+          companyId: company.id,
+          packageId: packageItem.id,
+          user: user?.name || "Firma Yetkilisi",
+          company: company.name,
+          packageName: packageItem.name,
+          requestedAt: new Date().toISOString(),
+          status: "Bekliyor"
+        });
+        window.MockData.notifications.unshift({
+          id: `ntf-${Date.now()}`,
+          type: "premium",
+          title: "Premium talebiniz alındı",
+          message: `${packageItem.name} talebiniz admin onayına gönderildi.`,
+          createdAt: new Date().toISOString(),
+          read: false
+        });
+        log("premium.request", { type: "Premium", packageId: payload.packageId, company: company.name });
+        window.MockData.save();
+        window.dispatchEvent(new CustomEvent("notificationschange"));
+        return { ok: true };
+      });
+    },
+    notifications() {
+      return withFallback("/api/notifications", {}, () => window.MockData.notifications);
+    },
+    markNotificationsRead() {
+      return withFallback("/api/notifications/read-all", { method: "PUT" }, () => {
+        window.MockData.notifications.forEach((item) => { item.read = true; });
+        log("notification.read_all", { type: "CRUD" });
+        window.MockData.save();
+        window.dispatchEvent(new CustomEvent("notificationschange"));
+        return { ok: true };
+      });
+    },
     logs(params = {}) {
       return withFallback(`/api/admin/logs?${new URLSearchParams(params).toString()}`, {}, () => {
-        let rows = [...window.MockData.logs];
+        const systemLogs = JSON.parse(window.localStorage.getItem("systemLogs") || "[]");
+        let rows = [...systemLogs, ...window.MockData.logs];
         if (params.type) rows = rows.filter((row) => row.type === params.type);
         if (params.user) rows = rows.filter((row) => String(row.user).toLocaleLowerCase("tr-TR").includes(params.user.toLocaleLowerCase("tr-TR")));
         if (params.search) rows = rows.filter((row) => JSON.stringify(row).toLocaleLowerCase("tr-TR").includes(params.search.toLocaleLowerCase("tr-TR")));

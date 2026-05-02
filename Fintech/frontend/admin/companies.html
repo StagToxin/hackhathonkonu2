@@ -8,6 +8,8 @@
   <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../css/main.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -20,53 +22,64 @@
       <nav class="admin-nav">
         <a data-nav href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
         <p class="nav-group-title">Firmalar</p>
-        <a data-nav href="companies.html"><i data-lucide="building-2"></i><span>Tümü</span></a>
+        <a data-nav href="companies.html"><i data-lucide="building-2"></i><span>TÃ¼mÃ¼</span></a>
         <a data-nav href="pending-companies.html"><i data-lucide="user-check"></i><span>Onay Bekleyenler</span></a>
         <a data-nav href="groups.html"><i data-lucide="network"></i><span>Gruplar</span></a>
-        <p class="nav-group-title">Finansal Yönetim</p>
+        <p class="nav-group-title">Finansal YÃ¶netim</p>
         <a data-nav href="financial-report.html"><i data-lucide="chart-no-axes-combined"></i><span>Finansal Rapor</span></a>
         <a data-nav href="financial-status.html"><i data-lucide="activity"></i><span>Finansal Durum</span></a>
-        <a data-nav href="investment.html"><i data-lucide="landmark"></i><span>Yatırım</span></a>
+        <a data-nav href="investment.html"><i data-lucide="landmark"></i><span>YatÄ±rÄ±m</span></a>
         <a data-nav href="presentation.html"><i data-lucide="presentation"></i><span>On Sunum</span></a>
-        <p class="nav-group-title">Mali Yapımız</p>
-        <a data-nav href="our-companies.html"><i data-lucide="briefcase-business"></i><span>Firmalarımız</span></a>
-        <a data-nav href="contracts.html"><i data-lucide="file-signature"></i><span>Sözleşmeler</span></a>
+        <p class="nav-group-title">Mali YapÄ±mÄ±z</p>
+        <a data-nav href="our-companies.html"><i data-lucide="briefcase-business"></i><span>FirmalarÄ±mÄ±z</span></a>
+        <a data-nav href="contracts.html"><i data-lucide="file-signature"></i><span>SÃ¶zleÅŸmeler</span></a>
         <a data-nav href="subscriptions.html"><i data-lucide="receipt"></i><span>Abonelik</span></a>
-        <a data-nav href="financial-process.html"><i data-lucide="workflow"></i><span>Finansal Süreç</span></a>
+        <a data-nav href="financial-process.html"><i data-lucide="workflow"></i><span>Finansal SÃ¼reÃ§</span></a>
         <a data-nav href="premium-requests.html"><i data-lucide="gem"></i><span>Premium Talepler</span></a>
         <a data-nav href="logs.html"><i data-lucide="scroll-text"></i><span>Loglar</span></a>
         <a data-nav href="settings.html"><i data-lucide="settings"></i><span>Ayarlar</span></a>
       </nav>
       <div class="admin-footer flex items-center justify-between gap-3">
-        <div class="user-meta min-w-0"><p class="truncate text-sm font-black" data-current-user>Admin</p><p class="text-xs text-white/55">Yönetici</p></div>
-        <button class="btn btn-ghost icon-btn text-white" data-logout title="Çıkış"><i data-lucide="log-out"></i></button>
+        <div class="user-meta min-w-0"><p class="truncate text-sm font-black" data-current-user>Admin</p><p class="text-xs text-white/55">YÃ¶netici</p></div>
+        <button class="btn btn-ghost icon-btn text-white" data-logout title="Ã‡Ä±kÄ±ÅŸ"><i data-lucide="log-out"></i></button>
       </div>
     </aside>
     <div class="admin-main">
       <header class="admin-header">
-        <div><h1 class="text-2xl font-black text-text-dark">Firmalar</h1><p class="text-sm font-medium text-text-secondary">CRUD, filtreleme ve dışa aktarım</p></div>
+        <div><h1 class="text-2xl font-black text-text-dark">Firmalar</h1><p class="text-sm font-medium text-text-secondary">CRUD, filtreleme ve dÄ±ÅŸa aktarÄ±m</p></div>
         <div class="flex items-center gap-2">
+          <button class="btn btn-secondary" id="mapToggle" type="button"><i data-lucide="map" class="h-5 w-5"></i> Harita GÃ¶rÃ¼nÃ¼mÃ¼</button>
           <button class="btn btn-secondary" id="exportBtn"><i data-lucide="file-spreadsheet" class="h-5 w-5"></i> Excel</button>
           <button class="btn btn-primary" id="openCompanyModal"><i data-lucide="plus" class="h-5 w-5"></i> Yeni Firma Ekle</button>
+          <div class="relative"><button class="btn btn-secondary icon-btn relative" data-notification-button title="Bildirimler"><i data-lucide="bell"></i><span class="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs font-black text-white" data-notification-count>0</span></button></div>
+          <button class="btn btn-secondary" id="langToggle" type="button"><span data-lang-toggle>TR</span></button>
+          <button class="btn btn-secondary icon-btn" data-theme-toggle title="Tema"><i data-lucide="moon"></i></button>
         </div>
       </header>
       <main class="admin-content">
         <section class="surface p-4">
           <form id="filterForm" class="grid gap-3 lg:grid-cols-[1fr_180px_150px_170px_170px]">
-            <div data-field><label class="field-label" for="search">Arama</label><input class="input" id="search" name="search" placeholder="Şirket adı, vergi no, sözleşme türü"></div>
-            <div data-field><label class="field-label" for="contractType">Sözleşme türü</label><select class="select" id="contractType" name="contractType"><option value="">Tümü</option><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>Diğer</option></select></div>
-            <div data-field><label class="field-label" for="status">Durum</label><select class="select" id="status" name="status"><option value="">Tümü</option><option>Aktif</option><option>Pasif</option></select></div>
-            <div data-field><label class="field-label" for="contractEndFrom">Bitiş başlangıç</label><input class="input" id="contractEndFrom" name="contractEndFrom" type="date"></div>
-            <div data-field><label class="field-label" for="contractEndTo">Bitiş bitiş</label><input class="input" id="contractEndTo" name="contractEndTo" type="date"></div>
+            <div data-field><label class="field-label" for="search">Arama</label><input class="input" id="search" name="search" placeholder="Åirket adÄ±, vergi no, sÃ¶zleÅŸme tÃ¼rÃ¼"></div>
+            <div data-field><label class="field-label" for="contractType">SÃ¶zleÅŸme tÃ¼rÃ¼</label><select class="select" id="contractType" name="contractType"><option value="">TÃ¼mÃ¼</option><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>DiÄŸer</option></select></div>
+            <div data-field><label class="field-label" for="status">Durum</label><select class="select" id="status" name="status"><option value="">TÃ¼mÃ¼</option><option>Aktif</option><option>Pasif</option></select></div>
+            <div data-field><label class="field-label" for="contractEndFrom">BitiÅŸ baÅŸlangÄ±Ã§</label><input class="input" id="contractEndFrom" name="contractEndFrom" type="date"></div>
+            <div data-field><label class="field-label" for="contractEndTo">BitiÅŸ bitiÅŸ</label><input class="input" id="contractEndTo" name="contractEndTo" type="date"></div>
           </form>
         </section>
 
         <section class="surface mt-5">
           <div class="table-wrap" id="tableWrap"></div>
           <div class="flex items-center justify-between px-5 py-4 text-sm font-bold text-text-secondary">
-            <span id="paginationInfo">0 kayıt</span>
-            <div class="flex gap-2"><button class="btn btn-secondary" disabled>Önceki</button><button class="btn btn-secondary" disabled>Sonraki</button></div>
+            <span id="paginationInfo">0 kayÄ±t</span>
+            <div class="flex flex-wrap gap-2" id="paginationControls"></div>
           </div>
+        </section>
+        <section class="surface mt-5 hidden p-5" id="mapPanel">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div><h2 class="admin-section-title">Firma LokasyonlarÄ±</h2><p class="text-sm font-medium text-text-secondary">Sabit demo koordinatlarÄ±yla Leaflet harita gÃ¶rÃ¼nÃ¼mÃ¼</p></div>
+            <span class="badge badge-info">Mock geocoding</span>
+          </div>
+          <div class="leaflet-map" id="companiesMap"></div>
         </section>
       </main>
     </div>
@@ -79,13 +92,14 @@
         <button class="btn btn-secondary icon-btn" id="closeCompanyModal" type="button"><i data-lucide="x"></i></button>
       </div>
       <form id="newCompanyForm" class="grid gap-4 p-5 sm:grid-cols-2" novalidate>
-        <div data-field><label class="field-label">Şirket adı</label><input class="input" name="name" data-validate="required"></div>
+        <div data-field><label class="field-label">Åirket adÄ±</label><input class="input" name="name" data-validate="required"></div>
         <div data-field><label class="field-label">Vergi No</label><input class="input" name="taxNo" maxlength="10" data-validate="required|taxNo"></div>
-        <div data-field><label class="field-label">Sözleşme türü</label><select class="select" name="contractType"><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>Diğer</option></select></div>
-        <div data-field><label class="field-label">Sözleşme bitiş</label><input class="input" name="contractEnd" type="date" data-validate="required"></div>
-        <div data-field><label class="field-label">Yıllık ciro</label><input class="input" name="actualTurnover" type="number" data-validate="required"></div>
+        <div data-field><label class="field-label">SÃ¶zleÅŸme tÃ¼rÃ¼</label><select class="select" name="contractType"><option>Rapor</option><option>Analiz</option><option>Sistem</option><option>DiÄŸer</option></select></div>
+        <div data-field><label class="field-label">SÃ¶zleÅŸme baÅŸlangÄ±Ã§</label><input class="input" name="contractStart" type="date" data-validate="required"></div>
+        <div data-field><label class="field-label">SÃ¶zleÅŸme bitiÅŸ</label><input class="input" name="contractEnd" type="date" data-validate="required"></div>
+        <div data-field><label class="field-label">YÄ±llÄ±k ciro</label><input class="input" name="actualTurnover" type="number" data-validate="required"></div>
         <div data-field><label class="field-label">Yetkili</label><input class="input" name="contactName" data-validate="required"></div>
-        <div class="sm:col-span-2 flex justify-end gap-2"><button class="btn btn-secondary" type="button" id="cancelNewCompany">Vazgeç</button><button class="btn btn-primary" type="submit">Kaydet</button></div>
+        <div class="sm:col-span-2 flex justify-end gap-2"><button class="btn btn-secondary" type="button" id="cancelNewCompany">VazgeÃ§</button><button class="btn btn-primary" type="submit">Kaydet</button></div>
       </form>
     </section>
   </div>
@@ -98,31 +112,76 @@
   <script src="../js/auth.js"></script>
   <script src="../js/router.js"></script>
   <script src="../js/export.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/theme-toggle.js"></script>
   <script>
+    const ITEMS_PER_PAGE = 10;
     let currentRows = [];
+    let currentPage = 1;
+    let companiesMap;
     function badgeFor(type) {
       return type === "Sistem" ? "badge-info" : type === "Analiz" ? "badge-success" : type === "Rapor" ? "badge-warning" : "badge-danger";
     }
+    function renderPagination(totalPages) {
+      const controls = document.querySelector("#paginationControls");
+      totalPages = Math.max(totalPages, 1);
+      controls.innerHTML = `
+        <button class="btn btn-secondary" type="button" ${currentPage === 1 ? "disabled" : ""} data-page="${currentPage - 1}">Önceki</button>
+        ${Array.from({ length: totalPages }, (_, index) => `<button class="btn ${index + 1 === currentPage ? "btn-primary" : "btn-secondary"}" type="button" data-page="${index + 1}">${index + 1}</button>`).join("")}
+        <button class="btn btn-secondary" type="button" ${currentPage === totalPages ? "disabled" : ""} data-page="${currentPage + 1}">Sonraki</button>`;
+      controls.querySelectorAll("[data-page]").forEach((button) => button.addEventListener("click", () => {
+        currentPage = Number(button.dataset.page);
+        render(currentRows);
+      }));
+    }
+
+    function editCompany(companyId) {
+      window.location.href = `company-detail.html?id=${companyId}&mode=edit`;
+    }
+
+    async function deleteCompany(companyId) {
+      if (!window.confirm("Bu firmayı silmek istediğinizden emin misiniz?")) return;
+      await Api.deleteCompany(companyId);
+      Toast.show("Firma kaydı silindi.", { type: "success" });
+      loadRows();
+    }
+
     function render(rows) {
       const wrap = document.querySelector("#tableWrap");
-      document.querySelector("#paginationInfo").textContent = `${rows.length} kayıt gösteriliyor`;
+      const totalPages = Math.ceil(rows.length / ITEMS_PER_PAGE) || 1;
+      if (currentPage > totalPages) currentPage = totalPages;
+      const paginatedRows = rows.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+      document.querySelector("#paginationInfo").textContent = `${rows.length} kayıt içinden ${paginatedRows.length} kayıt gösteriliyor`;
+      renderPagination(totalPages);
       if (!rows.length) {
         wrap.innerHTML = `<div class="empty-state"><div class="grid h-16 w-16 place-items-center rounded-full bg-emerald-50 text-primary-dark"><i data-lucide="building-2" class="h-8 w-8"></i></div><h3>Henüz firma eklenmemiş</h3><p>Portföyünüzü yönetmek için ilk firmayı ekleyin.</p><button class="btn btn-primary" onclick="document.querySelector('#companyModal').classList.add('is-open')">Firma ekle</button></div>`;
       } else {
-        wrap.innerHTML = `<table class="data-table"><thead><tr><th>Şirket adı</th><th>Vergi No</th><th>Sözleşme Türü</th><th>Bitiş</th><th>Yıllık Ciro</th><th>Finansal Skor</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${rows.map((c) => `<tr><td class="font-black text-text-dark">${c.name}</td><td>${c.taxNo}</td><td><span class="badge ${badgeFor(c.contractType)}">${c.contractType}</span></td><td>${Utils.formatDate(c.contractEnd)}</td><td>${Utils.formatCurrency(c.actualTurnover)}</td><td><span class="font-black text-primary-dark">${c.score || 68}/100</span></td><td><span class="badge badge-success">${c.status || "Aktif"}</span></td><td><div class="flex gap-2"><a class="btn btn-secondary icon-btn" title="Görüntüle" href="company-detail.html?id=${c.id}"><i data-lucide="eye"></i></a><button class="btn btn-secondary icon-btn" title="Düzenle"><i data-lucide="pencil"></i></button><button class="btn btn-danger icon-btn" title="Sil" data-delete="${c.id}"><i data-lucide="trash-2"></i></button></div></td></tr>`).join("")}</tbody></table>`;
+        wrap.innerHTML = `<table class="data-table"><thead><tr><th>Şirket adı</th><th>Vergi No</th><th>Sözleşme Türü</th><th>Bitiş</th><th>Yıllık Ciro</th><th>Finansal Sağlık</th><th>Durum</th><th>Aksiyon</th></tr></thead><tbody>${paginatedRows.map((c) => { const score = Utils.healthScore(c); return `<tr><td class="font-black text-text-dark">${c.name}</td><td>${c.taxNo}</td><td><span class="badge ${badgeFor(c.contractType)}">${c.contractType}</span></td><td>${Utils.formatDate(c.contractEnd)}</td><td>${Utils.formatCurrency(c.actualTurnover)}</td><td><span class="health-score ${Utils.healthClass(score)}">${score}/100</span></td><td><span class="badge badge-success">${c.status || "Aktif"}</span></td><td><div class="flex gap-2"><a class="btn btn-secondary icon-btn" title="Görüntüle" href="company-detail.html?id=${c.id}"><i data-lucide="eye"></i></a><button class="btn btn-secondary icon-btn" title="Düzenle" data-edit="${c.id}"><i data-lucide="pencil"></i></button><button class="btn btn-danger icon-btn" title="Sil" data-delete="${c.id}"><i data-lucide="trash-2"></i></button></div></td></tr>`; }).join("")}</tbody></table>`;
       }
       lucide.createIcons();
-      document.querySelectorAll("[data-delete]").forEach((btn) => btn.addEventListener("click", async () => {
-        await Api.deleteCompany(btn.dataset.delete);
-        Toast.show("Firma kaydı silindi.", { type: "success" });
-        loadRows();
-      }));
+      document.querySelectorAll("[data-edit]").forEach((btn) => btn.addEventListener("click", () => editCompany(btn.dataset.edit)));
+      document.querySelectorAll("[data-delete]").forEach((btn) => btn.addEventListener("click", () => deleteCompany(btn.dataset.delete)));
     }
     async function loadRows() {
       const form = document.querySelector("#filterForm");
       const data = await Api.companies(Object.fromEntries(new FormData(form).entries()));
       currentRows = data.rows;
+      currentPage = 1;
       render(currentRows);
+      renderMap(currentRows);
+    }
+    function renderMap(rows) {
+      if (!window.L || document.querySelector("#mapPanel").classList.contains("hidden")) return;
+      if (!companiesMap) {
+        companiesMap = L.map("companiesMap").setView([39.7, 32.9], 5);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "Â© OpenStreetMap" }).addTo(companiesMap);
+      }
+      companiesMap.eachLayer((layer) => { if (layer instanceof L.Marker) companiesMap.removeLayer(layer); });
+      rows.filter((company) => company.lat && company.lng).forEach((company) => {
+        L.marker([company.lat, company.lng]).addTo(companiesMap).bindPopup(`<strong>${company.name}</strong><br>${company.address || ""}`);
+      });
+      window.setTimeout(() => companiesMap.invalidateSize(), 120);
     }
     document.querySelector("#filterForm").addEventListener("input", Utils.debounce(loadRows, 70));
     document.querySelector("#filterForm").addEventListener("change", loadRows);
@@ -130,6 +189,11 @@
     document.querySelector("#closeCompanyModal").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
     document.querySelector("#cancelNewCompany").addEventListener("click", () => document.querySelector("#companyModal").classList.remove("is-open"));
     document.querySelector("#exportBtn").addEventListener("click", () => Export.excel("firmalar.xlsx", currentRows));
+    document.querySelector("#mapToggle").addEventListener("click", () => {
+      document.querySelector("#mapPanel").classList.toggle("hidden");
+      renderMap(currentRows);
+    });
+    document.querySelector("#langToggle").addEventListener("click", () => I18n.toggle());
     Validation.bind("#newCompanyForm");
     document.querySelector("#newCompanyForm").addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -144,4 +208,7 @@
   </script>
 </body>
 </html>
+
+
+
 

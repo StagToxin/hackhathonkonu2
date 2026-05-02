@@ -7,6 +7,7 @@
   <link rel="icon" href="../assets/favicon.ico">
   <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/admin.css">
 </head>
@@ -28,7 +29,7 @@
     </section>
     <div class="modal-backdrop" id="previewModal"><section class="modal-panel"><div class="flex items-center justify-between border-b border-slate-100 p-5"><h2 class="text-xl font-black text-text-dark">Slayt Önizleme</h2><button class="btn btn-secondary icon-btn" id="closePreview"><i data-lucide="x"></i></button></div><div id="modalSlides" class="grid gap-4 p-5 md:grid-cols-2"></div></section></div>
   </template>
-  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/pptx-generator.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/admin-layout.js"></script>
   <script>
     AdminLayout.render({ active: "presentation.html", title: "On Sunum", subtitle: ".pptx üretimi ve marka uyumlu slayt önizleme", content: document.querySelector("#pageTemplate").innerHTML });
     const slides = ["Kapak", "Temel mali veriler", "Bankadaki genel durum + kredi limitleri", "Finansal rasyolar", "Mali yapı özeti + trendler", "AI yorum / özet slayt"];
@@ -48,17 +49,17 @@
     document.querySelector("#generateBtn").addEventListener("click", async () => {
       const loading = document.querySelector("#pptxLoading");
       loading.classList.remove("hidden");
-      const blob = await Api.generatePptx(companySelect.value);
-      window.setTimeout(() => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "pro-sicht-on-sunum.pptx";
-        link.click();
-        URL.revokeObjectURL(url);
+      try {
+        const company = MockData.companies.find(c=>c.id===companySelect.value) || MockData.companies[0];
+        await PptxGenerator.generateRealPPTX(company, MockData.financial);
+        Api.log("ai.pptx.generate", { type: "AI", companyId: company.id, responseTimeMs: 1200, realPptx: true });
         loading.classList.add("hidden");
         Toast.show("Sunum dosyası hazırlandı.", { type: "success" });
-      }, 1300);
+      } catch (error) {
+        loading.classList.add("hidden");
+        Toast.show("Sunum üretilemedi. Lütfen tekrar deneyin.", { type: "error" });
+        Api.log("error.pptx.generate", { type: "Hata", status: "error", message: error.message });
+      }
     });
     lucide.createIcons();
   </script>

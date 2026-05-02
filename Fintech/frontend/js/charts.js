@@ -93,6 +93,49 @@
     });
   }
 
+  function resolveCanvas(canvasOrId) {
+    return typeof canvasOrId === "string" ? document.getElementById(canvasOrId) : canvasOrId;
+  }
+
+  function createLineChart(canvasId, data, options = {}) {
+    const chart = line(resolveCanvas(canvasId), data.labels, data.values, data.label || "Değer");
+    if (chart && options) {
+      chart.options = { ...chart.options, ...options };
+      chart.update();
+    }
+    return chart;
+  }
+
+  function createDonutChart(canvasId, data) {
+    return doughnut(resolveCanvas(canvasId), data.labels, data.values);
+  }
+
+  function createBarChart(canvasId, data) {
+    return bar(resolveCanvas(canvasId), data.labels, data.values, data.label || "Değer");
+  }
+
+  function createGaugeChart(canvasId, value) {
+    const canvas = resolveCanvas(canvasId);
+    if (!canvas || !window.Chart) return null;
+    destroyExisting(canvas);
+    const colors = theme();
+    return new Chart(canvas, {
+      type: "doughnut",
+      data: {
+        labels: ["Skor", "Kalan"],
+        datasets: [{ data: [value, Math.max(0, 100 - value)], backgroundColor: ["#2DBE8E", colors.grid], borderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        rotation: -90,
+        circumference: 180,
+        cutout: "72%",
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
   function refreshAll() {
     if (!window.Chart?.instances) return;
     const colors = theme();
@@ -120,5 +163,5 @@
   }
 
   window.addEventListener("themechange", refreshAll);
-  window.Charts = { line, doughnut, bar, refreshAll };
+  window.Charts = { line, doughnut, bar, createLineChart, createDonutChart, createBarChart, createGaugeChart, refreshAll };
 })();

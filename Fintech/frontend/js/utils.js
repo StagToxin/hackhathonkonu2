@@ -41,8 +41,18 @@
     },
     byId(id) {
       return document.getElementById(id);
+    },
+    healthScore(company) {
+      const revenue = Number(company.actualTurnover || company.estimatedTurnover || 1);
+      const contract = Number(company.contractValue || 0);
+      const score = Math.round(Math.max(22, Math.min(96, (company.score || 55) + (revenue > 90000000 ? 6 : 0) - (contract / Math.max(revenue, 1)) * 120)));
+      return score;
+    },
+    healthClass(score) {
+      return score >= 70 ? "good" : score >= 40 ? "mid" : "low";
     }
   };
 
   window.Utils = Utils;
+  window.formatCurrency = Utils.formatCurrency;
 })();

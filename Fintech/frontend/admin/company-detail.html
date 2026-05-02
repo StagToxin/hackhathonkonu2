@@ -7,6 +7,8 @@
   <link rel="icon" href="../assets/favicon.ico">
   <script>window.tailwind=window.tailwind||{};tailwind.config = { theme: { extend: { colors: { primary: '#2DBE8E', 'primary-dark': '#1F8F6A', 'text-dark': '#1E3A46', 'text-secondary': '#4A4A4A', 'bg-main': '#F8FAFB', 'bg-alt': '#F2F2F2' } } } };</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="../css/main.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -33,7 +35,12 @@
     <div class="admin-main">
       <header class="admin-header">
         <div><h1 class="text-2xl font-black text-text-dark">Firma Detay</h1><p class="text-sm font-medium text-text-secondary">OCR destekli profil ve finansal sekmeler</p></div>
-        <a class="btn btn-secondary" href="companies.html"><i data-lucide="arrow-left" class="h-5 w-5"></i> Listeye dön</a>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <a class="btn btn-secondary" href="companies.html"><i data-lucide="arrow-left" class="h-5 w-5"></i> Listeye dön</a>
+          <div class="relative"><button class="btn btn-secondary icon-btn relative" data-notification-button title="Bildirimler"><i data-lucide="bell"></i><span class="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-xs font-black text-white" data-notification-count>0</span></button></div>
+          <button class="btn btn-secondary" id="langToggle" type="button"><span data-lang-toggle>TR</span></button>
+          <button class="btn btn-secondary icon-btn" data-theme-toggle title="Tema"><i data-lucide="moon"></i></button>
+        </div>
       </header>
       <main class="admin-content">
         <section class="surface p-5" id="companyHero">
@@ -82,7 +89,7 @@
                 <div data-field><label class="field-label">Şubeler</label><textarea class="textarea" name="branches" placeholder="Her satıra bir şube"></textarea><button class="btn btn-secondary mt-2" type="button" id="addBranch"><i data-lucide="plus" class="h-4 w-4"></i> Şube ekle</button></div>
                 <div data-field><label class="field-label">Alt firmalar / bağımsız birimler</label><textarea class="textarea" name="subsidiaries" placeholder="Her satıra bir firma"></textarea><button class="btn btn-secondary mt-2" type="button" id="addSubsidiary"><i data-lucide="plus" class="h-4 w-4"></i> Alt firma ekle</button></div>
                 <div data-field><label class="field-label">Bağlı olduğu grup/holding</label><input class="input" name="group"></div>
-                <div data-field><label class="field-label">Harita lokasyonu</label><div class="grid h-[180px] place-items-center rounded-xl border border-slate-200 bg-bg-main text-center text-sm font-bold text-text-secondary"><i data-lucide="map-pinned" class="mb-2 h-8 w-8 text-primary-dark"></i> Leaflet harita alanı hazır</div></div>
+                <div data-field><label class="field-label">Harita lokasyonu</label><div class="leaflet-map" id="companyMap"></div></div>
                 <div class="lg:col-span-3 flex justify-end gap-2"><button class="btn btn-secondary" type="reset">Değişiklikleri sıfırla</button><button class="btn btn-primary" type="submit">Kaydet</button></div>
               </form>
             </section>
@@ -103,17 +110,29 @@
   <script src="../js/auth.js"></script>
   <script src="../js/router.js"></script>
   <script src="../js/ocr-upload.js"></script>
+  <script src="../js/notifications.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/theme-toggle.js"></script>
   <script>
     let companyId = Utils.getQueryParam("id") || "cmp-1";
     function lines(value) { return Array.isArray(value) ? value.join("\n") : value || ""; }
     function fill(company) {
-      document.querySelector("#companyHero").innerHTML = `<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div class="flex items-center gap-4"><div class="grid h-16 w-16 place-items-center rounded-xl bg-emerald-50 text-2xl font-black text-primary-dark">${company.name.slice(0, 1)}</div><div><h2 class="text-2xl font-black text-text-dark">${company.name}</h2><p class="text-sm font-bold text-text-secondary">${company.taxNo} · ${company.contractType}</p></div></div><div class="flex flex-wrap gap-2"><span class="badge badge-success">${company.status}</span><span class="badge badge-info">Finansal Skor ${company.score}/100</span><span class="badge badge-warning">Bitiş ${Utils.formatDate(company.contractEnd)}</span></div></div>`;
+      const health = Utils.healthScore(company);
+      document.querySelector("#companyHero").innerHTML = `<div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"><div class="flex items-center gap-4"><div class="grid h-16 w-16 place-items-center rounded-xl bg-emerald-50 text-2xl font-black text-primary-dark">${company.name.slice(0, 1)}</div><div><h2 class="text-2xl font-black text-text-dark">${company.name}</h2><p class="text-sm font-bold text-text-secondary">${company.taxNo} · ${company.contractType}</p></div></div><div class="flex flex-wrap gap-2"><span class="badge badge-success">${company.status}</span><span class="health-score ${Utils.healthClass(health)}">Sağlık ${health}/100</span><span class="badge badge-info">Finansal Skor ${company.score}/100</span><span class="badge badge-warning">Bitiş ${Utils.formatDate(company.contractEnd)}</span></div></div>`;
       const form = document.querySelector("#companyForm");
       Object.entries(company).forEach(([key, value]) => {
         if (!form.elements[key]) return;
         form.elements[key].value = key === "branches" || key === "subsidiaries" ? lines(value) : value;
       });
+      renderCompanyMap(company);
       lucide.createIcons();
+    }
+    function renderCompanyMap(company) {
+      if (!window.L || !company.lat || !company.lng || !document.querySelector("#companyMap")) return;
+      if (window.companyDetailMap) window.companyDetailMap.remove();
+      window.companyDetailMap = L.map("companyMap").setView([company.lat, company.lng], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap" }).addTo(window.companyDetailMap);
+      L.marker([company.lat, company.lng]).addTo(window.companyDetailMap).bindPopup(`<strong>${company.name}</strong><br>${company.address || ""}`).openPopup();
     }
     Api.company(companyId).then(fill);
     Validation.bind("#companyForm");
@@ -136,6 +155,7 @@
       document.querySelector(`[data-tab-panel='${button.dataset.tabTarget}']`).classList.remove("hidden");
     }));
     OcrUpload.setup({ zone: "#dropZone", input: "#ocrFile", form: "#companyForm", status: "#ocrStatus" });
+    document.querySelector("#langToggle").addEventListener("click", () => I18n.toggle());
   </script>
 </body>
 </html>

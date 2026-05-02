@@ -1,2 +1,58 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kullanıcı | Firma Bilgileri</title><link rel="icon" href="../assets/favicon.ico"><script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB'}}}}</script><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/user.css"></head><body data-requires-role="user"><main class="grid min-h-screen place-items-center bg-bg-main p-6"><section class="surface max-w-2xl p-8 text-center"><h1 class="text-2xl font-black text-text-dark">Firma Bilgileri</h1><p class="mt-2 text-text-secondary">Kullanıcı firma kayıt/güncelleme formu ikinci kısımda eklenecek; kayıtların admin onayına düşmesi API altyapısında hazır.</p><a class="btn btn-primary mt-6" href="dashboard.html">Panele dön</a></section></main><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script></body></html>
-
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kullanıcı | Firma Bilgileri</title>
+  <link rel="icon" href="../assets/favicon.ico">
+  <script>window.tailwind=window.tailwind||{};tailwind.config={theme:{extend:{colors:{primary:'#2DBE8E','primary-dark':'#1F8F6A','text-dark':'#1E3A46','text-secondary':'#4A4A4A','bg-main':'#F8FAFB','bg-alt':'#F2F2F2'}}}}</script>
+  <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"><link rel="stylesheet" href="../css/user.css">
+</head>
+<body data-requires-role="user">
+  <div id="userPage"></div>
+  <template id="pageTemplate">
+    <div id="approvalAlert" class="mb-5 hidden rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-800">Firmanız admin onayı bekliyor. Onaylandığında tüm özelliklere erişebileceksiniz.</div>
+    <section class="grid gap-5 xl:grid-cols-[1fr_340px]">
+      <form id="companyForm" class="user-card grid gap-4 p-5 md:grid-cols-2" novalidate>
+        <div data-field><label class="field-label">Şirket unvanı</label><input class="input" name="name" data-validate="required"></div>
+        <div data-field><label class="field-label">Vergi no</label><input class="input" name="taxNo" maxlength="10" data-validate="required|taxNo"></div>
+        <div data-field><label class="field-label">Ticaret sicil</label><input class="input" name="tradeRegistryNo" data-validate="registry"></div>
+        <div data-field><label class="field-label">Yetkili kişi</label><input class="input" name="contactName" data-validate="required"></div>
+        <div data-field><label class="field-label">Telefon</label><input class="input" name="phone" data-validate="required|phone"></div>
+        <div data-field><label class="field-label">E-posta</label><input class="input" name="email" data-validate="required|email"></div>
+        <div data-field class="md:col-span-2"><label class="field-label">Adres</label><textarea class="textarea" name="address" data-validate="required"></textarea></div>
+        <div class="md:col-span-2 flex justify-end"><button class="btn btn-primary" type="submit"><i data-lucide="save" class="h-5 w-5"></i> Bilgileri Güncelle</button></div>
+      </form>
+      <aside class="user-card p-5">
+        <h2 class="text-xl font-black text-text-dark">Belgeyle Otomatik Doldur</h2>
+        <p class="mt-2 text-sm font-medium text-text-secondary">Vergi levhası, sözleşme veya sicil belgesi yükleyin; alanlar AI ile doldurulsun.</p>
+        <div id="dropZone" class="drop-zone mt-5 grid cursor-pointer place-items-center p-7 text-center">
+          <input id="ocrFile" class="hidden" type="file" accept=".pdf,.jpg,.jpeg,.png">
+          <i data-lucide="upload-cloud" class="mb-3 h-10 w-10 text-primary-dark"></i>
+          <p class="font-black text-text-dark">PDF, JPG veya PNG yükleyin</p>
+        </div>
+        <div id="ocrStatus" class="mt-4 hidden rounded-xl bg-emerald-50 p-4 font-black text-primary-dark"><span class="spinner mr-2 inline-block align-middle"></span> Belge analiz ediliyor...</div>
+      </aside>
+    </section>
+  </template>
+  <script src="../js/utils.js"></script><script src="../js/toast.js"></script><script src="../js/validation.js"></script><script src="../js/mock-data.js"></script><script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/router.js"></script><script src="../js/ocr-upload.js"></script><script src="../js/theme-toggle.js"></script><script src="../js/user-layout.js"></script>
+  <script>
+    UserLayout.render({ active: "company-info.html", title: "Firma Bilgilerim", subtitle: "Kayıt ve güncelleme talepleriniz admin onayına düşer", content: document.querySelector("#pageTemplate").innerHTML });
+    const form = document.querySelector("#companyForm");
+    Api.myCompany().then((company) => {
+      Object.entries(company).forEach(([key, value]) => { if (form.elements[key]) form.elements[key].value = value || ""; });
+      document.querySelector("#approvalAlert").classList.toggle("hidden", !["Bekliyor", "pending"].includes(company.approvalStatus));
+    });
+    Validation.bind(form);
+    OcrUpload.setup({ zone: "#dropZone", input: "#ocrFile", form: "#companyForm", status: "#ocrStatus" });
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!Validation.validateForm(form)) return;
+      await Api.updateMyCompany(Object.fromEntries(new FormData(form).entries()));
+      Toast.show("Bilgileriniz alındı. Güncelleme talebi admin onayına gönderildi.", { type: "success" });
+      document.querySelector("#approvalAlert").classList.remove("hidden");
+    });
+  </script>
+</body>
+</html>
